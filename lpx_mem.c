@@ -22,6 +22,16 @@ int LpxMemGlobalPoolEmptyCount;
 int LpxMemGlobalSafeAllocCount = 0;
 int LpxMemGlobalSafeFreeCount = 0;
 
+inline LpxList * LpxMemPoolListByAdr(void * adr)
+{
+    return (LpxList*)((char*)adr + LpxMemGlobalPoolBlockSize + sizeof(int));
+}
+
+inline void * LpxMemPoolAdrByList(LpxList * list)
+{
+    return (LpxList*)((char*)list - LpxMemGlobalPoolBlockSize - sizeof(int));
+}
+
 void * LpxMemSafeAlloc(int size)
 {
     void * data;
@@ -103,7 +113,7 @@ void * LpxMemPoolAlloc()
         if (pool_data == NULL)
             return NULL;
         *(int*)((char*)pool_data + LpxMemGlobalPoolBlockSize) = LPX_POOL_SIGN;
-        list = (LpxList*)((char*)pool_data + LpxMemGlobalPoolBlockSize + sizeof(int));
+        list = LpxMemPoolListByAdr(pool_data);
         LpxListInit(list);
         LpxListAddTail(&LpxMemGlobalPoolAllocList, list);
         ++LpxMemGlobalPoolAllocCount;
@@ -120,8 +130,10 @@ void * LpxMemPoolAlloc()
 void LpxMemPoolFree(void * adr)
 {
     LpxList * list;
+    if (adr == NULL)
+        return;
     assert(LpxMemPoolCheckOverflow(adr) == 0);
-    list = (LpxList*)((char*)adr + LpxMemGlobalPoolBlockSize + sizeof(int));
+    list = LpxMemPoolListByAdr(adr);
     LpxListRemove(list);
     --LpxMemGlobalPoolAllocCount; //it's possible to 'free' already free block
                                   //this will lead to mess the counters
@@ -132,8 +144,48 @@ void LpxMemPoolFree(void * adr)
 void LpxMemPoolTrueFree(void * adr)
 {
     LpxList * list;
-    list = (LpxList*)((char*)adr + LpxMemGlobalPoolBlockSize);
+    if (adr == NULL)
+        return;
+    assert(LpxMemPoolCheckOverflow(adr) == 0);
+    list = LpxMemPoolListByAdr(adr);
     LpxListRemove(list);
     LpxMemSafeFree(adr);
+}
+
+void LpxMemPoolDestroy()
+{
+    LpxList * list;
+    void * adr;
+    if (!LpxMemGlobalPoolInit)
+        return;
+    list = LpxMemGlobalPoolAllocList.next;
+    while(list != NULL)
+    {
+        adr = LpxMemPoolAdrByList(list);
+        LpxMemPoolTrueFree(adr);
+    }
+    list = LpxMemGlobalPoolFreeList.next;
+    while(list != NULL)
+    {
+        adr = LpxMemPoolAdrByList(list);
+        LpxMemPoolTrueFree(adr);
+    }
+    LpxMemGlobalPoolInit = 0;
+}
+
+void LpxMemPoolFlush()
+{
+    int blocks_to_free;
+    LpxList * list;
+    if (float(LpxMemGlobalPoolEmptyCount) / LpxMemGlobalPoolAllocCount < LPX_POOL_ALLOC_RATIO)
+        return;
+    blocks_to_free = LpxMemGlobalPoolEmptyCount - (LPX_POOL_FREE_RATIO*LpxMemGlobalPoolAllocCount);
+    while(blocks_to_free > 0)
+    {
+        list = LpxMemGlobalPoolFreeList.next;
+        LpxMemPoolTrueFree(list);
+        --LpxMemGlobalPoolEmptyCount;
+        --blocks_to_free;
+    }
 }
 
