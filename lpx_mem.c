@@ -163,12 +163,14 @@ void LpxMemPoolDestroy()
     {
         adr = LpxMemPoolAdrByList(list);
         LpxMemPoolTrueFree(adr);
+        list = LpxMemGlobalPoolAllocList.next;
     }
     list = LpxMemGlobalPoolFreeList.next;
     while(list != NULL)
     {
         adr = LpxMemPoolAdrByList(list);
         LpxMemPoolTrueFree(adr);
+        list = LpxMemGlobalPoolAllocList.next;
     }
     LpxMemGlobalPoolInit = 0;
 }
@@ -176,14 +178,22 @@ void LpxMemPoolDestroy()
 void LpxMemPoolFlush()
 {
     int blocks_to_free;
+    int allocated = LpxMemGlobalPoolAllocCount;
+    int empty = LpxMemGlobalPoolEmptyCount;
     LpxList * list;
-    if (float(LpxMemGlobalPoolEmptyCount) / LpxMemGlobalPoolAllocCount < LPX_POOL_ALLOC_RATIO)
+    void * adr;
+    if (empty  < LPX_POOL_ALLOC_RATIO)
         return;
-    blocks_to_free = LpxMemGlobalPoolEmptyCount - (LPX_POOL_FREE_RATIO*LpxMemGlobalPoolAllocCount);
+    if (allocated < LPX_POOL_FREE_RATIO)
+        allocated = LPX_POOL_FREE_RATIO;
+    if ((float)(empty) / allocated <= LPX_POOL_ALLOC_RATIO)
+        return;
+    blocks_to_free = empty - (LPX_POOL_FREE_RATIO*allocated);
     while(blocks_to_free > 0)
     {
         list = LpxMemGlobalPoolFreeList.next;
-        LpxMemPoolTrueFree(list);
+        adr = LpxMemPoolAdrByList(list);
+        LpxMemPoolTrueFree(adr);
         --LpxMemGlobalPoolEmptyCount;
         --blocks_to_free;
     }
