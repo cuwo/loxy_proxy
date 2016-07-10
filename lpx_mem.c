@@ -56,7 +56,18 @@ int LpxMemCheckOverflow(void * adr)
     return 0;
 }
 
-void LpxMemSafeFree(void * adr);
+int LpxMemPoolCheckOverflow(void * adr)
+{
+    int sign, size, result;
+    if ( (result = LpxMemCheckOverflow(adr)) != 0)
+        return result;
+    sign = *(int*)( (char*)adr + LpxMemGlobalPoolBlockSize);
+    if (sign != LPX_POOL_SIGN)
+        return -4;
+    return 0;
+}
+
+void LpxMemSafeFree(void * adr)
 {
     int size;
     assert(LpxMemCheckOverflow(adr) == 0);
@@ -67,39 +78,40 @@ void LpxMemSafeFree(void * adr);
 
 int LpxMemPoolInit(int block_size)
 {
-    if (!LpxMemGlobalPoolInit || block_size < 0)
+    if (LpxMemGlobalPoolInit || block_size < 0)
         return -1;
     LpxMemGlobalPoolInit = 1;
     LpxMemGlobalPoolBlockSize = block_size;
     LpxMemGlobalPoolAllocCount = 0;
     LpxMemGlobalPoolEmptyCount = 0;
-    LpxListInit(LpxMemGlobalPoolFreeList);
-    LpxListInit(LpxMemGlobalPoolAllocList);
+    LpxListInit(&LpxMemGlobalPoolFreeList);
+    LpxListInit(&LpxMemGlobalPoolAllocList);
     return 0;
 }
 
-void * LpxMemAllocPool()
+void * LpxMemPoolAlloc()
 {
     LpxList * list;
     void * pool_data;
     if (!LpxMemGlobalPoolInit)
         return NULL;
-    list = LpxMemGlobalPoolFreeList->next;
+    list = LpxMemGlobalPoolFreeList.next;
     if (list == NULL)
     {
         //alloc new element
-        pool_data = LpxMemSafeAlloc(LpxMemGlobalPoolBlockSize + sizeof(LpxList));
+        pool_data = LpxMemSafeAlloc(LpxMemGlobalPoolBlockSize + sizeof(LpxList) + sizeof(int));
         if (pool_data == NULL)
             return NULL;
-        list = (LpxList*)((char*)pool_data + LpxMemGlobalPoolBlockSize);
+        *(int*)((char*)pool_data + LpxMemGlobalPoolBlockSize) = LPX_POOL_SIGN;
+        list = (LpxList*)((char*)pool_data + LpxMemGlobalPoolBlockSize + sizeof(int));
         LpxListInit(list);
-        LpxListAddTail(LpxMemGlobalPoolAllocList, list);
+        LpxListAddTail(&LpxMemGlobalPoolAllocList, list);
         ++LpxMemGlobalPoolAllocCount;
         return pool_data;
     }
     LpxListRemove(list);
     --LpxMemGlobalPoolEmptyCount;
-    LpxListAddTail(LpxMemGlobalPoolAllocList, list);
+    LpxListAddTail(&LpxMemGlobalPoolAllocList, list);
     ++LpxMemGlobalPoolAllocCount;
     pool_data = ((char*)list) - LpxMemGlobalPoolBlockSize;
     return pool_data;
@@ -108,12 +120,12 @@ void * LpxMemAllocPool()
 void LpxMemPoolFree(void * adr)
 {
     LpxList * list;
-    assert(LpxMemCheckOverflow(adr) == 0);
-    list = (LpxList*)((char*)adr + LpxMemGlobalPoolBlockSize);
+    assert(LpxMemPoolCheckOverflow(adr) == 0);
+    list = (LpxList*)((char*)adr + LpxMemGlobalPoolBlockSize + sizeof(int));
     LpxListRemove(list);
     --LpxMemGlobalPoolAllocCount; //it's possible to 'free' already free block
                                   //this will lead to mess the counters
-    LpxListAddTail(LpxMemGlobalPoolFreeList, list);
+    LpxListAddTail(&LpxMemGlobalPoolFreeList, list);
     ++LpxMemGlobalPoolEmptyCount;
 }
 

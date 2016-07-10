@@ -2,6 +2,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "assert.h"
+
+#include "lpx_list.h"
 //memory-related things
 
 //when Empty/Alloc > alloc_ratio, memfree happens
@@ -11,6 +13,7 @@
 
 #define LPX_ALLOC_SIGN1 0xDEADC0BA
 #define LPX_ALLOC_SIGN2 0xC001B0DA
+#define LPX_POOL_SIGN 0x9EBAC0F3
 
 //init the memory pool
 int LpxMemPoolInit(int block_size);
