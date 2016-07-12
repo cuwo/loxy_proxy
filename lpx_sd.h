@@ -1,5 +1,9 @@
 #pragma once
 #include "lpx_list.h"
+#include "lpx_mem.h"
+#include <sys/time.h>
+#include <stdio.h>
+#include <unistd.h>
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
@@ -8,7 +12,7 @@
 #define LPX_SD_CLEAN (offsetof(union SocketDescriptot, http_out_data))
 
 //all kinds of flags
-#define LPX_FLAG_INIT 1 //inited, must be set
+#define LPX_FLAG_OPEN 1 //socket is opened
 #define LPX_FLAG_CLIENT 2 //client-side, must be always connected
 #define LPX_FLAG_SERVER 4 //server-side, must be always non-http
 #define LPX_FLAG_HTTP 8 //produce http request to parse, only client
@@ -34,14 +38,14 @@ typedef union SocketDescriptor
     padding[LPX_SD_SIZE];
     struct 
     {
+        LpxList sd_list; //dns resolving list entry
         LpxList dns_list; //dns resolving list entry
         LpxList post_list; //list of all SDs to be processed after main epoll cycle
         unsigned int flags; //SD status, type, etc
         int fd; //file descriptor, for read/write/close
         int efd; //epoll file descriptor, for control
-        //reserved ints
-        int temp1;
-        int temp2;
+        struct timeval ts; //timestamp, for timeout monitoring
+        union SocketDescriptor * other; //other side of link
         union
         {
             struct //for direct sockets (server, or connected client)
@@ -75,3 +79,21 @@ typedef union SocketDescriptor
         };
     };
 } SD;
+
+void LpxSdSetFlag(SD * sda, unsigned int flag);
+
+void LpxSdClearFlag(SD * sda, unsigned int flag);
+
+int LpxSdGetFlag(SD * sda, unsigned int flag);
+
+SD * LpxSdCreate();
+
+void LpxSdClose(SD * sda);
+
+void LpxSdDestroyAll();
+
+void LpxSdDestroy(SD * sda);
+
+//updates the timestamp in the desctiptor
+//returns amount of millisecons since the last update
+int LpxSdUpdateTimestamp(SD * sda);

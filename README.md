@@ -3,7 +3,6 @@ simple http proxy with good performance
 
 TODO:
 
-- memory pool allocation
 - epoll cycle for everything
 - password authentification
 - http CONNECT
@@ -12,3 +11,5 @@ TODO:
 - timeout checking
 
 DONE:
+
+- memory pool allocation
