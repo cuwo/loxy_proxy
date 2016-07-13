@@ -1,6 +1,11 @@
 # loxy_proxy
 simple http proxy with good performance
 
+the design ideas are complete
+the implementation is still in progress
+
+current progress: 5%
+
 TODO:
 
 - epoll cycle for everything
