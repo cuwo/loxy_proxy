@@ -2,9 +2,9 @@
 //I also put here everything small and uncategorised
 
 #pragma once
+#include "includes.h"
 #include "lpx_sd.h"
 #include "lpx_mem.h"
-#include "string.h"
 
 //simple structure describing a constant string
 typedef struct LpxConstString

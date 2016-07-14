@@ -1,8 +1,5 @@
 #pragma once
-#include "stdlib.h"
-#include "stdio.h"
-#include "assert.h"
-
+#include "includes.h"
 #include "lpx_list.h"
 //memory-related things
 

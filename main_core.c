@@ -1,5 +1,5 @@
 //main proxy source file. everything else comes from here.
-
+#define _GNU_SOURCE
 #include "lpx_mt.h"
 #include "lpx_args.h"
 //saved password auth info

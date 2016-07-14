@@ -63,7 +63,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
         len1 = Base64encode_len(temp);
         LpxGlobalPassData.len = len1 - 1;
         LpxGlobalPassData.buf = (char*)LpxMemSafeAlloc(len1);
-        Base64encode(upass, auth_string, temp);
+        Base64encode(LpxGlobalPassData.buf, auth_string, temp);
         dbgprint(("ARGPARSE: encoded string %s\n", upass));
     }
     LpxMemSafeFree(password);

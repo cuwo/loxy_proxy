@@ -1,9 +1,8 @@
 #pragma once
+#include "includes.h"
 #include "lpx_list.h"
 #include "lpx_mem.h"
-#include <sys/time.h>
-#include <stdio.h>
-#include <unistd.h>
+
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
@@ -35,7 +34,7 @@
 
 typedef union SocketDescriptor
 {
-    padding[LPX_SD_SIZE];
+    char padding[LPX_SD_SIZE];
     struct 
     {
         LpxList sd_list; //dns resolving list entry
@@ -70,7 +69,7 @@ typedef union SocketDescriptor
                 //input buffer data
                 int http_in_ptr;
                 int http_in_size;
-                char http_in_data[LPX_SD_IN_SIZE]
+                char http_in_data[LPX_SD_IN_SIZE];
                 //outbut buffer data
                 int http_out_ptr;
                 int http_out_size;
