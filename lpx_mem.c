@@ -80,6 +80,8 @@ int LpxMemPoolCheckOverflow(void * adr)
 void LpxMemSafeFree(void * adr)
 {
     int size;
+    if(adr == NULL)
+        return;
     assert(LpxMemCheckOverflow(adr) == 0);
     size = *((int*)(adr) - 2);
     LpxMemGlobalSafeFreeCount -= size;
