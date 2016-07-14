@@ -6,9 +6,12 @@
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
-#define LPX_SD_BUF_SIZE (LPX_SD_SIZE - offsetof(union SocketDescriptot, out_data))
-#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(union SocketDescriptot, http_out_data))
-#define LPX_SD_CLEAN (offsetof(union SocketDescriptot, http_out_data))
+#define LPX_SD_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, out_data))
+#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
+#define LPX_SD_CLEAN (offsetof(SD, http_out_data))
+
+#define LPX_SD_FROM_OFFSET(ptr, offset) ((SD*)( ((char*)(ptr)) - offset ))
+#define LPX_SD_FROM_MAIN_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, sd_list))
 
 //all kinds of flags
 #define LPX_FLAG_OPEN 1 //socket is opened
@@ -37,7 +40,7 @@ typedef union SocketDescriptor
     char padding[LPX_SD_SIZE];
     struct 
     {
-        LpxList sd_list; //dns resolving list entry
+        LpxList sd_list; //main sd list entry
         LpxList dns_list; //dns resolving list entry
         LpxList post_list; //list of all SDs to be processed after main epoll cycle
         unsigned int flags; //SD status, type, etc

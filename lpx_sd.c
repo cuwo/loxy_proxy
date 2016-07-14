@@ -43,15 +43,16 @@ void LpxSdDestroy(SD * sda)
 
 void LpxSdDestroyAll()
 {
-    SD * sda = LpxSdGlobalListMain.next;
-    while(sda != NULL)
+    LpxList * list = LpxSdGlobalListMain.next;
+    SD * sda;
+    while(list != NULL)
     {
+        sda = LPX_SD_FROM_MAIN_LIST(list);
         LpxSdDestroy(sda);
-        sda = LpxSdGlobalListMain.next;
     }
 }
 
-void LpxSdUpdateTimestamp(SD * sda)
+int LpxSdUpdateTimestamp(SD * sda)
 {
     struct timeval last_ts = sda->ts;
     gettimeofday(&(sda->ts), NULL);
