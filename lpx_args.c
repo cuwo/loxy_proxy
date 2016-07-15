@@ -51,8 +51,6 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
     }
     if (password != NULL && username != NULL)
     {
-        dbgprint(("ARGPARSE: username got: %s\n", username));
-        dbgprint(("ARGPARSE: password got: %s\n", password));
         temp = len1 + len2 + 1;
         auth_string = (char *)LpxMemSafeAlloc(temp);
         strcpy(auth_string, username);
@@ -64,7 +62,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
         LpxGlobalPassData.len = len1 - 1;
         LpxGlobalPassData.buf = (char*)LpxMemSafeAlloc(len1);
         Base64encode(LpxGlobalPassData.buf, auth_string, temp);
-        dbgprint(("ARGPARSE: encoded string %s\n", upass));
+        dbgprint(("ARGPARSE: encoded string %s\n", LpxGlobalPassData.buf));
     }
     LpxMemSafeFree(password);
     LpxMemSafeFree(username);

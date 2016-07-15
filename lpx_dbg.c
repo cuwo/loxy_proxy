@@ -10,13 +10,13 @@ void dbghex(void * data, int size)
     {
         printf("%06x: ", i);
         for (j=0; j<16; j++) 
-            if (i+j < buflen)
+            if (i+j < size)
                 printf("%02x ", buf[i+j]);
             else
                 printf("   ");
         printf(" ");
         for (j=0; j<16; j++) 
-            if (i+j < buflen)
+            if (i+j < size)
                 printf("%c", isprint(buf[i+j]) ? buf[i+j] : '.');
         printf("\n");
     }
