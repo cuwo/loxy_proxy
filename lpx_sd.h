@@ -96,6 +96,8 @@ void LpxSdDestroyAll();
 
 void LpxSdDestroy(SD * sda);
 
+void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned int epoll_flags);
+
 //updates the timestamp in the desctiptor
 //returns amount of millisecons since the last update
 int LpxSdUpdateTimestamp(SD * sda);

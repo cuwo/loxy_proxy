@@ -4,7 +4,7 @@ simple http proxy with good performance
 the design ideas are complete
 the implementation is still in progress
 
-current progress: 5%
+current progress: 8%
 
 TODO:
 
@@ -18,3 +18,4 @@ TODO:
 DONE:
 
 - memory pool allocation
+- mainternance init

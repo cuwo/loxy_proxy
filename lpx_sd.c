@@ -14,9 +14,20 @@ SD * LpxSdCreate()
     new_sd = (SD*)LpxMemPoolAlloc();
     if (new_sd == NULL)
         return NULL;
-    memset(new_sd, 0, LPX_SD_CLEAN); //clear everything except buffers
     LpxListAddTail(&LpxSdGlobalListMain, &(new_sd->sd_list));
     return new_sd;
+}
+
+void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned int epoll_flags)
+{
+    struct epoll_event event;
+    memset(sda, 0, LPX_SD_CLEAN); //clear everything except buffers
+    sda->fd = socket;
+    sda->efd = epoll_fd;
+    sda->flags = flags;
+    event.data.ptr = sda;
+    event.events = epoll_flags;
+    epoll_ctl (epoll_fd, EPOLL_CTL_ADD, socket, &event);
 }
 
 void LpxSdClose(SD * sda)
