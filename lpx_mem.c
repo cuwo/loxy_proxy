@@ -125,7 +125,7 @@ void * LpxMemPoolAlloc()
     --LpxMemGlobalPoolEmptyCount;
     LpxListAddTail(&LpxMemGlobalPoolAllocList, list);
     ++LpxMemGlobalPoolAllocCount;
-    pool_data = ((char*)list) - LpxMemGlobalPoolBlockSize;
+    pool_data = LpxMemPoolAdrByList(list);
     return pool_data;
 }
 
