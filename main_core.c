@@ -55,6 +55,8 @@ int main(int argc, char ** argv)
     while(1)
     {
         n = epoll_wait (epoll_fd, events, LPX_MAX_EVENTS, -1);
+        //get current time
+        //it's better to use the one call for all events occured
         gettimeofday(&cycle_time, NULL);
         for (i = 0; i < n; ++i)
         {
@@ -78,6 +80,12 @@ int main(int argc, char ** argv)
             }
             else
             {
+                //non-connected socket closed the other side -> kill it here
+                if ((events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) && !LpxSdGetFlag(sda, LPX_FLAG_CONN))
+                {
+                    LpxCbKill(sda);
+                    continue;
+                }
                 //timeout control
                 LpxSdUpdateTimestampExplicit(sda, &cycle_time);
                 //data
