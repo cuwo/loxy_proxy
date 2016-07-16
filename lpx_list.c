@@ -20,6 +20,8 @@ void LpxListRemove(LpxList * list)
 
 void LpxListAddTail(LpxList * where, LpxList * what)
 {
+    if (what -> prev != NULL || what -> next != NULL)
+        return;
     if (where -> next != NULL)
     {
         where -> next -> prev = what;

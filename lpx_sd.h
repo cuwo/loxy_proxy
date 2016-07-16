@@ -12,6 +12,7 @@
 
 #define LPX_SD_FROM_OFFSET(ptr, offset) ((SD*)( ((char*)(ptr)) - offset ))
 #define LPX_SD_FROM_MAIN_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, sd_list))
+#define LPX_SD_FROM_PP_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, pp_list))
 
 //all kinds of flags
 #define LPX_FLAG_OPEN 1 //socket is opened
@@ -27,12 +28,15 @@
 #define LPX_FLAG_SIGFD 1024 //signalfd socket
 #define LPX_FLAG_TIMER 2048 //timer socket
 #define LPX_FLAG_PP 4096 //requires post-processing
-#define LPX_FLAG_GET 8192 //get request
-#define LPX_FLAG_POST 16384 //post request
-#define LPX_FLAG_CONNECT 32768 //connect request
+#define LPX_FLAG_TGET 8192 //get request type
+#define LPX_FLAG_TPOST 16384 //post request type
+#define LPX_FLAG_TCON 32768 //connect request type
 #define LPX_FLAG_CLRGP !(LPX_FLAG_GET | LPX_FLAG_POST) //to clear get/post flags
 #define LPX_FLAG_LISTEN 65536 //listen socket
-
+#define LPX_FLAG_PP_KILL 131072 //post-processing, kill
+#define LPX_FLAG_PP_WRITE 262144 //post-processing, write
+#define LPX_FLAG_PP_READ 524288 //post-processing, read
+#define LPX_FLAG_AUTH 1048576 //authentificated
 //main data structure in the project
 
 typedef union SocketDescriptor
@@ -42,7 +46,7 @@ typedef union SocketDescriptor
     {
         LpxList sd_list; //main sd list entry
         LpxList dns_list; //dns resolving list entry
-        LpxList post_list; //list of all SDs to be processed after main epoll cycle
+        LpxList pp_list; //list of all SDs to be processed after main epoll cycle
         unsigned int flags; //SD status, type, etc
         int fd; //file descriptor, for read/write/close
         int efd; //epoll file descriptor, for control
@@ -86,7 +90,11 @@ void LpxSdSetFlag(SD * sda, unsigned int flag);
 
 void LpxSdClearFlag(SD * sda, unsigned int flag);
 
+//check if any of flags passed are set
 int LpxSdGetFlag(SD * sda, unsigned int flag);
+
+//check if all of flags passed are set
+int LpxSdGetFlags(SD * sda, unsigned int flags);
 
 SD * LpxSdCreate();
 
@@ -101,3 +109,5 @@ void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned 
 //updates the timestamp in the desctiptor
 //returns amount of millisecons since the last update
 int LpxSdUpdateTimestamp(SD * sda);
+
+int LpxSdUpdateTimestampExplicit(SD * sda, struct timeval * tv);

@@ -5,7 +5,7 @@ LpxList LpxSdGlobalListMain = {NULL, NULL};
 //global list of SDs with pending DNS requests
 LpxList LpxSdGlobalListDns = {NULL, NULL};
 //global list of SDs requiring post-processing
-LpxList LpxSdGlobalListPost = {NULL, NULL};
+LpxList LpxSdGlobalListPP = {NULL, NULL};
 
 SD * LpxSdCreate()
 {
@@ -15,6 +15,7 @@ SD * LpxSdCreate()
     if (new_sd == NULL)
         return NULL;
     LpxListAddTail(&LpxSdGlobalListMain, &(new_sd->sd_list));
+    LpxSdUpdateTimestamp(new_sd);
     return new_sd;
 }
 
@@ -48,6 +49,8 @@ void LpxSdClose(SD * sda)
 void LpxSdDestroy(SD * sda)
 {
     LpxListRemove(&(sda->sd_list)); //remove from the main SD list
+    LpxListRemove(&(sda->dns_list)); //remove it from other lists
+    LpxListRemove(&(sda->pp_list));
     LpxSdClose(sda); //close connections (if not done yet)
     LpxMemPoolFree(sda); //free the allocated pool
 }
@@ -71,6 +74,14 @@ int LpxSdUpdateTimestamp(SD * sda)
         (sda->ts.tv_usec - last_ts.tv_usec)/1000.0 + 0.5;
 }
 
+int LpxSdUpdateTimestampExplicit(SD * sda, struct timeval * tv)
+{
+    struct timeval last_ts = sda->ts;
+    sda->ts = *tv;
+    return (sda->ts.tv_sec - last_ts.tv_sec)*1000.0 + 
+        (sda->ts.tv_usec - last_ts.tv_usec)/1000.0 + 0.5;
+}
+
 inline void LpxSdSetFlag(SD * sda, unsigned int flag)
 {
     sda->flags |= flag;
@@ -79,6 +90,11 @@ inline void LpxSdSetFlag(SD * sda, unsigned int flag)
 inline int LpxSdGetFlag(SD * sda, unsigned int flag)
 {
     return (sda->flags & flag) == 0 ? 0 : 1;
+}
+
+inline int LpxSdGetFlags(SD * sda, unsigned int flag)
+{
+    return (sda->flags & flag) == flag ? 1 : 0;
 }
 
 inline void LpxSdClearFlag(SD * sda, unsigned int flag)
