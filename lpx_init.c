@@ -11,7 +11,7 @@ int LpxListenCompleteInit(int listen_port, int epoll_fd)
     //set it reusable
     temp = 1;
     setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &temp, sizeof(temp));
-    make_nonbl(listen_sock);
+    LpxNetMakeNonbl(listen_sock);
     memset(&listen_addr, 0, sizeof(listen_addr));
     listen_addr.sin_family = AF_INET;
     listen_addr.sin_port = htons(listen_port); //use the port specified

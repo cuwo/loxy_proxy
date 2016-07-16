@@ -1,5 +1,6 @@
 //main proxy source file. everything else comes from here.
 #define _GNU_SOURCE
+#include "includes.h"
 #include "lpx_mt.h"
 #include "lpx_args.h"
 #include "lpx_init.h"
@@ -44,7 +45,7 @@ int main(int argc, char ** argv)
         exit(-1);
     }
     //alloc events buffer
-    events = (epoll_event*)LpxMemSafeAlloc (LPX_MAX_EVENTS * sizeof(struct epoll_event));
+    events = (struct epoll_event*)LpxMemSafeAlloc (LPX_MAX_EVENTS * sizeof(struct epoll_event));
     if(events == NULL)
     {
         printf("Event buffer alloc failed!\n");
