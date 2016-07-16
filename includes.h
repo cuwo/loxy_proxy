@@ -16,4 +16,6 @@
 #include <netinet/in.h>
 #include <sys/signalfd.h>
 #include <sys/types.h>
+#include <sys/timerfd.h>
+#include <sys/time.h>
 #include <inttypes.h>
