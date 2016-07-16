@@ -63,11 +63,18 @@ int main(int argc, char ** argv)
             if (LpxSdGetFlag(sda, LPX_FLAG_MAINT))
             {
                 //mainternance
-                if (LpxSdGetFlag(sda, LPX_FLAG_LISTEN) //new client connected
+                if (LpxSdGetFlag(sda, LPX_FLAG_LISTEN)) //new client connected
                 {
                     LpxCbAccept(sda);
                 }
-                else if (LpxSdGetFlag(sda, LPX_FLAG_TIMER) //periodic timer, check all connected clients
+                else if (LpxSdGetFlag(sda, LPX_FLAG_TIMER)) //periodic timer, check all connected clients
+                {
+                
+                }
+                else //DNS processing
+                {
+                
+                }
             }
             else
             {

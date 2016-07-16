@@ -1,6 +1,7 @@
 #pragma once
 #include "includes.h"
 #include "lpx_sd.h"
+#include "lpx_dbg.h"
 #include "lpx_net.h"
 
 //new client connected

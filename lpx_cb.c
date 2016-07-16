@@ -24,9 +24,9 @@ void LpxCbAccept(SD * sda)
         {
             dbgprint(("getname fail"));
         }
-        make_nonbl(accept_fd);
+        LpxNetMakeNonbl(accept_fd);
         LpxSdInit(new_sd, accept_fd, LPX_FLAG_OPEN | LPX_FLAG_CLIENT | LPX_FLAG_HTTP, 
                 sda->efd, EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP);
-        dbgprint(("socket %d registered\n", tfd));
+        dbgprint(("socket %d registered\n", accept_fd));
     }
 }
