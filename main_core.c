@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
                 //data
                 
                 //there is something to write, and we can do that?
-                if (events[i].events & EPOLLOUT && sda->http_out_size != 0)
+                if ((events[i].events & EPOLLOUT) && sda->http_out_size != 0)
                 {
                     LpxCbWrite(sda);
                 }
@@ -105,7 +105,18 @@ int main(int argc, char ** argv)
                     continue;
                 }
                 
-                //reading stuff
+                //perform http parsing
+                if (LpxSdGetFlag(sda, LPX_FLAG_HTTP) && (events[i].events & EPOLLIN))
+                {
+                    LpxCbParse(sda);
+                    continue;
+                }
+                //perform passthrough reading
+                if (LpxSdGetFlag(sda, LPX_FLAG_CONN) && (events[i].events & EPOLLIN))
+                {
+                    LpxCbRead(sda);
+                    continue;
+                }
             }
         }
         
@@ -113,12 +124,29 @@ int main(int argc, char ** argv)
         list_elem = LpxSdGlobalListPP.next;
         while(list_elem != NULL)
         {
+            dbgprint(("pp called\n"));
             sda = LPX_SD_FROM_PP_LIST(list_elem);
-            //do callbacks depending on PP task
-            
-            //process next element
+            //prepare next list element
             LpxListRemove(list_elem);
             list_elem = LpxSdGlobalListPP.next;
+            //do callbacks depending on PP task
+            if(LpxSdGetFlag(sda, LPX_FLAG_KILL))
+            {
+                LpxCbKill(sda);
+                continue;
+            }
+            else
+            {
+                if(LpxSdGetFlag(sda, LPX_FLAG_WRITE))
+                {
+                    LpxCbWrite(sda);
+                }
+                else if(LpxSdGetFlag(sda, LPX_FLAG_READ))
+                {
+                    LpxCbRead(sda);
+                }
+                LpxSdClearFlag(sda, LPX_FLAG_PP_CLEAR);
+            }
         }
     }
 }
