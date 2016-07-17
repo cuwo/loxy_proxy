@@ -37,12 +37,13 @@ void LpxCbWrite(SD * sda)
     extern LpxList LpxSdGlobalListPP;
     SD * other;
     res = LpxNetWrite(sda);
-    if (res == 1 && LpxSdGetFlag(LPX_FLAG_LOCK)) //unlock required
+    if (res == 1 && LpxSdGetFlag(sda, LPX_FLAG_LOCK)) //unlock required
     {
         //post-process the opposite side for reading
         other = sda->other;
         assert(other != NULL);
         LpxSdSetFlag(other, LPX_FLAG_PP | LPX_FLAG_PP_READ);
         LpxListAddTail(&LpxSdGlobalListPP, &(other->pp_list));
+        LpxSdClearFlag(sda, LPX_FLAG_LOCK);
     }
 }
