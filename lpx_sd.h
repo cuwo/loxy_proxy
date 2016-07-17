@@ -6,7 +6,6 @@
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
-#define LPX_SD_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, out_data))
 #define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
 #define LPX_SD_CLEAN (offsetof(SD, http_out_data))
 
@@ -37,6 +36,7 @@
 #define LPX_FLAG_PP_WRITE 262144 //post-processing, write
 #define LPX_FLAG_PP_READ 524288 //post-processing, read
 #define LPX_FLAG_AUTH 1048576 //authentificated
+#define LPX_FLAG_LOCK 2097152 //requires locking
 //main data structure in the project
 
 typedef union SocketDescriptor
@@ -52,37 +52,24 @@ typedef union SocketDescriptor
         int efd; //epoll file descriptor, for control
         struct timeval ts; //timestamp, for timeout monitoring
         union SocketDescriptor * other; //other side of link
-        union
-        {
-            struct //for direct sockets (server, or connected client)
-            {
-                //only output data buffer
-                int out_ptr;
-                int out_size;
-                char out_data[];
-            };
-            struct //for http sockets (client)
-            {
-                struct gaicb dns_gai; //getaddrinfo_a arguments
-                struct sigevent dns_sev; //sigevent structure for dns resolving
-                struct sockaddr_in src_adr; //source address of the request
-                struct sockaddr_in dst_adr; //target local address where req came to
-                struct sockaddr_in trg_adr; //target address where to connect
-                char host[LPX_SD_HOST_SIZE]; //target host string
-                char service[6]; //target port string
-                //reserved ints, will be renamed later
-                int http_temp1;
-                int http_temp2;
-                //input buffer data
-                int http_in_ptr;
-                int http_in_size;
-                char http_in_data[LPX_SD_IN_SIZE];
-                //outbut buffer data
-                int http_out_ptr;
-                int http_out_size;
-                char http_out_data[];
-            };
-        };
+        struct gaicb dns_gai; //getaddrinfo_a arguments
+        struct sigevent dns_sev; //sigevent structure for dns resolving
+        struct sockaddr_in src_adr; //source address of the request
+        struct sockaddr_in dst_adr; //target local address where req came to
+        struct sockaddr_in trg_adr; //target address where to connect
+        char host[LPX_SD_HOST_SIZE]; //target host string
+        char service[6]; //target port string
+        //reserved ints, will be renamed later
+        int http_temp1;
+        int http_temp2;
+        //input buffer data
+        int http_in_ptr;
+        int http_in_size;
+        char http_in_data[LPX_SD_IN_SIZE];
+        //outbut buffer data
+        int http_out_ptr;
+        int http_out_size;
+        char http_out_data[];
     };
 } SD;
 

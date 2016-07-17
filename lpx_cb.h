@@ -10,3 +10,6 @@ void LpxCbAccept(SD * sda);
 
 //kill the socket entirely (from this side)
 void LpxCbKill(SD * sda);
+
+//write the data into socket (and unlock the other, if required)
+void LpxCbWrite(SD * sda);

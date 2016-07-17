@@ -91,6 +91,21 @@ int main(int argc, char ** argv)
                 //timeout control
                 LpxSdUpdateTimestampExplicit(sda, &cycle_time);
                 //data
+                
+                //there is something to write, and we can do that?
+                if (events[i].events & EPOLLOUT && sda->http_out_size != 0)
+                {
+                    LpxCbWrite(sda);
+                }
+                
+                //socket in the finish write state and nothing left to write?
+                if (LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0)
+                {
+                    LpxCbKill(sda);
+                    continue;
+                }
+                
+                //reading stuff
             }
         }
         
