@@ -15,3 +15,9 @@ typedef struct LpxConstString
 
 void LpxConstStringInit(LpxConstString * str, const char * in_str);
 void LpxConstStringFree(LpxConstString * str);
+
+//global error messages
+extern LpxConstString LpxErrGlobal400; //bad request
+extern LpxConstString LpxErrGlobal407; //auth required
+extern LpxConstString LpxErrGlobal503; //service unavailable
+extern LpxConstString LpxErrGlobal504; //gateway timeout

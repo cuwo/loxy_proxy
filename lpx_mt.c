@@ -11,3 +11,8 @@ void LpxConstStringFree(LpxConstString * str)
 {
     LpxMemSafeFree(str -> buf);
 }
+
+LpxConstString LpxErrGlobal400;
+LpxConstString LpxErrGlobal407;
+LpxConstString LpxErrGlobal503;
+LpxConstString LpxErrGlobal504;

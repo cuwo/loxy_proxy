@@ -3,6 +3,7 @@
 #include "includes.h"
 #include "lpx_sd.h"
 #include "lpx_net.h"
+#include "lpx_mt.h"
 #define LPX_MAX_LISTEN 16
 #define LPX_TIMER_PERIOD 5
 #define LPX_MAX_EVENTS 32
@@ -16,3 +17,6 @@ int LpxDnsCompleteInit(int epoll_fd);
 
 //init timer for timeout checking thing
 int LpxTimerCompleteInit(int epoll_fd);
+
+//init error messages
+void LpxErrorInit();

@@ -44,6 +44,8 @@ int main(int argc, char ** argv)
         printf("Timer init failed!\n");
         exit(-1);
     }
+    //init error messages
+    LpxErrorInit();
     //alloc events buffer
     events = (struct epoll_event*)LpxMemSafeAlloc (LPX_MAX_EVENTS * sizeof(struct epoll_event));
     if(events == NULL)
