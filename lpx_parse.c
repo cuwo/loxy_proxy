@@ -19,19 +19,19 @@ int LpxParseFastCheck(SD * sda)
                 if (memcmp(http_ptr, "\r\n\r\n", 4) == 0) //if it's really the end of header
                 {
                     sda->http_in_ptr = http_ptr - sda->http_in_data + 4; //record the processed part
-                    return http_ptr - sda->http_in_data + 4; //return the result size of the header
+                    return 1; //return ok
                 }
                 if (http_ptr[1] == '\n') //it's not header, so it can be just simple \r\n
                     ++http_ptr; //skip '\n' for now
                 else
-                    return 0; //it's not '\n', which is not possible, return error
+                    return -1; //it's not '\n', which is not possible, return error
             }
             else
                 break;
         }
         else if(c >= 0x80 || c < 0x20) //non-printable symbols can't be in http header
-            return 0; //return error
+            return -1; //return error
     }
     sda->http_in_ptr = http_ptr - sda->http_in_data; //save the pointer where we stopped checking
-    return -1; //say more data is required
+    return 0; //say more data is required
 }

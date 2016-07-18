@@ -40,3 +40,42 @@ int LpxNetWrite(SD * sda)
     sda->http_out_size = sda->http_out_ptr = 0;
     return 1;
 }
+
+int LpxNetRead(SD * sda, int type)
+{
+    LpxBuf * buffer
+    int to_read, limit, temp, fd;
+    if (type == 0) //HTTP reading
+    {
+        buffer = &(sda->http_in_buf);
+        to_read = LPX_SD_IN_SIZE - buffer->size;
+    }
+    else
+    {
+        if (sda->other == NULL)
+            return -1;
+        buffer = &(sda->other->http_other_buf);
+        to_read = LPX_SD_HTTP_BUF_SIZE - buffer->size;
+        limit = sda->other->http_limit;
+        if (limit >= 0)
+        {
+            to_read = MIN(to_read, limit);
+        }
+    }
+    if (to_read == 0)
+        return 1; //wasn't able to read anything, socket not blocked
+    temp = recv(sda->fd, buffer->data + buffer->size, to_write, MSG_NOSIGNAL);
+    if (temp == 0) //socket closed
+        return -1; //return error
+    if (temp < 0 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) //socket busy
+        return 0; //no data has been read
+    if (temp < 0) //other error happened
+        return -1;
+    if (temp < to_read)
+    {
+        buffer->size += temp;
+        return 0; //socket got blocked
+    }
+    buffer->size += temp;
+    return 1; //socket hasn't been blocked
+}

@@ -2,7 +2,6 @@
 
 #include "includes.h"
 #include "lpx_sd.h"
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 //check if the http header has received completely
 //also checks for bad symbols

@@ -10,3 +10,8 @@ void LpxNetMakeNonbl(int sock);
 //returns 0 when some data is still pending
 //returns -1 in case of socket error
 int LpxNetWrite(SD * sda);
+
+//read in http, or pass mode
+//in http mode, read to in buffer
+//in pass mode read directly to other write
+int LpxNetRead(SD * sda, int type);

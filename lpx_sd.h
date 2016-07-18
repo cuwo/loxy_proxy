@@ -30,15 +30,23 @@
 #define LPX_FLAG_TGET 8192 //get request type
 #define LPX_FLAG_TPOST 16384 //post request type
 #define LPX_FLAG_TCON 32768 //connect request type
-#define LPX_FLAG_CLRGP ~(LPX_FLAG_GET | LPX_FLAG_POST) //to clear get/post flags
+#define LPX_FLAG_GETPOST (LPX_FLAG_GET | LPX_FLAG_POST) //to clear get/post flags
 #define LPX_FLAG_LISTEN 65536 //listen socket
 #define LPX_FLAG_PP_KILL 131072 //post-processing, kill
 #define LPX_FLAG_PP_WRITE 262144 //post-processing, write
 #define LPX_FLAG_PP_READ 524288 //post-processing, read
-#define LPX_FLAG_PP_CLEAR ~(LPX_FLAG_PP | LPX_FLAG_PP_KILL | LPX_FLAG_PP_WRITE | LPX_FLAG_PP_READ)
+#define LPX_FLAG_PP_ALL (LPX_FLAG_PP | LPX_FLAG_PP_KILL | LPX_FLAG_PP_WRITE | LPX_FLAG_PP_READ | LPX_FLAG_PP_HTTP)
 #define LPX_FLAG_AUTH 1048576 //authentificated
 #define LPX_FLAG_LOCK 2097152 //requires locking
+#define LPX_FLAG_PP_HTTP 4194304
 //main data structure in the project
+
+typedef struct LpxBuf
+{
+    int ptr;
+    int size;
+    char data[];
+} LpxBuf;
 
 typedef union SocketDescriptor
 {
@@ -62,13 +70,27 @@ typedef union SocketDescriptor
         char service[6]; //target port string
         int http_limit; //in case of POST request, for mode switch
         int http_temp2;
-        int http_in_ptr;
-        int http_in_size;
-        char http_in_data[LPX_SD_IN_SIZE];
+        union
+        {
+            struct
+            {
+                int http_in_ptr;
+                int http_in_size;
+                char http_in_data[LPX_SD_IN_SIZE];
+            };
+            LpxBuf http_in_buf;
+        };
         //outbut buffer data
-        int http_out_ptr;
-        int http_out_size;
-        char http_out_data[];
+        union
+        {
+            struct
+            {
+                int http_out_ptr;
+                int http_out_size;
+                char http_out_data[];
+            };
+            LpxBuf http_out_buf;
+        };
     };
 } SD;
 

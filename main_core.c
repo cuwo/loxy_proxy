@@ -91,7 +91,12 @@ int main(int argc, char ** argv)
                 //timeout control
                 LpxSdUpdateTimestampExplicit(sda, &cycle_time);
                 //data
-                
+                //we lost the other connection, process it
+                if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN))
+                {
+                    LpxCbLost(sda);
+                    continue;
+                }
                 //there is something to write, and we can do that?
                 if ((events[i].events & EPOLLOUT) && sda->http_out_size != 0)
                 {
@@ -130,22 +135,27 @@ int main(int argc, char ** argv)
             LpxListRemove(list_elem);
             list_elem = LpxSdGlobalListPP.next;
             //do callbacks depending on PP task
-            if(LpxSdGetFlag(sda, LPX_FLAG_KILL))
+            if(LpxSdGetFlag(sda, LPX_FLAG_PP_KILL))
             {
                 LpxCbKill(sda);
                 continue;
             }
-            else
+            if(LpxSdGetFlag(sda, LPX_FLAG_PP_WRITE))
             {
-                if(LpxSdGetFlag(sda, LPX_FLAG_WRITE))
-                {
-                    LpxCbWrite(sda);
-                }
-                else if(LpxSdGetFlag(sda, LPX_FLAG_READ))
-                {
-                    LpxCbRead(sda);
-                }
-                LpxSdClearFlag(sda, LPX_FLAG_PP_CLEAR);
+                LpxSdClearFlag(sda, LPX_FLAG_PP_WRITE);
+                LpxCbWrite(sda);
+            }
+            if(LpxSdGetFlag(sda, LPX_FLAG_PP_READ))
+            {
+                LpxCbRead(sda);
+            }
+            if(LpxSdGetFlag(sda, LPX_FLAG_PP_HTTP))
+            {
+                LpxCbParse(sda);
+            }
+            if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL) || (LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0))
+            {
+                LpxCbKill(sda);
             }
         }
     }
