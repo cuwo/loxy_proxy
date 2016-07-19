@@ -94,7 +94,7 @@ int main(int argc, char ** argv)
                 //we lost the other connection, process it
                 if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN))
                 {
-                    LpxCbLost(sda);
+                    LpxCbKill(sda);
                     continue;
                 }
                 //there is something to write, and we can do that?
@@ -114,12 +114,16 @@ int main(int argc, char ** argv)
                 if (LpxSdGetFlag(sda, LPX_FLAG_HTTP) && (events[i].events & EPOLLIN))
                 {
                     LpxCbParse(sda);
-                    continue;
                 }
                 //perform passthrough reading
                 if (LpxSdGetFlag(sda, LPX_FLAG_CONN) && (events[i].events & EPOLLIN))
                 {
                     LpxCbRead(sda);
+                }
+                //socket died, kill it
+                if (LpxSdGetFlag(sda, LPX_FLAG_DEAD))
+                {
+                    LpxCbKill(sda);
                     continue;
                 }
             }

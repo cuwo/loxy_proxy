@@ -8,3 +8,5 @@
 //returns 0 in case of fail, -1 in case of no header end
 //returns http header end index in case of success
 int LpxParseFastCheck(SD * sda);
+
+int LpxParseMain(SD * sda);

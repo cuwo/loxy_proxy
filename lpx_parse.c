@@ -35,3 +35,9 @@ int LpxParseFastCheck(SD * sda)
     sda->http_in_ptr = http_ptr - sda->http_in_data; //save the pointer where we stopped checking
     return 0; //say more data is required
 }
+
+int LpxParseMain(SD * sda)
+{
+    //not implemented yet
+    return -1;
+}

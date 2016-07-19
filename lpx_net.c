@@ -44,7 +44,7 @@ int LpxNetWrite(SD * sda)
 int LpxNetRead(SD * sda, int type)
 {
     LpxBuf * buffer
-    int to_read, limit, temp, fd;
+    int to_read, temp, fd, limit = -1;
     if (type == 0) //HTTP reading
     {
         buffer = &(sda->http_in_buf);
@@ -71,6 +71,9 @@ int LpxNetRead(SD * sda, int type)
         return 0; //no data has been read
     if (temp < 0) //other error happened
         return -1;
+    //update the limit
+    if (limit > 0)
+        limit -= temp;
     if (temp < to_read)
     {
         buffer->size += temp;
