@@ -6,7 +6,7 @@ int LpxParseFastCheck(SD * sda)
     char * http_ptr, * http_end;
     unsigned char c;
     //ensure we don't skip previous parts of \r\n\r\n sign
-    http_ptr = MAX(0, sda->http_in_data + sda->http_in_ptr - 3);
+    http_ptr = sda->http_in_data + MAX(0, sda->http_in_ptr - 3);
     //count till the end of http buffer
     http_end = sda->http_in_data + sda->http_in_size;
     for ( ; http_ptr < http_end; ++http_ptr)
@@ -24,13 +24,19 @@ int LpxParseFastCheck(SD * sda)
                 if (http_ptr[1] == '\n') //it's not header, so it can be just simple \r\n
                     ++http_ptr; //skip '\n' for now
                 else
+                {
+                    dbgprint(("parse - bad n\n"));
                     return -1; //it's not '\n', which is not possible, return error
+                }
             }
             else
                 break;
         }
         else if(c >= 0x80 || c < 0x20) //non-printable symbols can't be in http header
+        {
+            dbgprint(("parse - bad c\n"));
             return -1; //return error
+        }
     }
     sda->http_in_ptr = http_ptr - sda->http_in_data; //save the pointer where we stopped checking
     return 0; //say more data is required

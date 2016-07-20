@@ -2,6 +2,7 @@
 
 #include "includes.h"
 #include "lpx_sd.h"
+#include "lpx_dbg.h"
 
 //check if the http header has received completely
 //also checks for bad symbols

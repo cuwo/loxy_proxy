@@ -16,6 +16,7 @@ void LpxPP(SD * sda, unsigned int flags)
 void LpxFinWr(SD * sda, LpxConstString * err)
 {
     int temp;
+    dbgprint(("fin wr\n"));
     LpxSdSetFlag(sda, LPX_FLAG_FINWR);
     if (err != NULL)
     {
@@ -60,6 +61,7 @@ void LpxCbWrite(SD * sda)
 {
     int res;
     extern LpxList LpxSdGlobalListPP;
+    dbgprint(("cb write\n"));
     SD * other;
     res = LpxNetWrite(sda);
     if (res > 0 && LpxSdGetFlag(sda, LPX_FLAG_LOCK)) //unlock required
@@ -86,22 +88,27 @@ void LpxCbWrite(SD * sda)
 void LpxCbParse(SD * sda)
 {
     int read_result, parse_result;
+    dbgprint(("cb parse\n"));
     read_result = LpxNetRead(sda, 0);
     if (read_result < 0)
     {
+        dbgprint(("cb parse - fast fail\n"));
         LpxSdSetFlag(sda, LPX_FLAG_DEAD);
         return;
     }
     parse_result = LpxParseFastCheck(sda);
-    if (parse_result == 0) //more data required
+    if (parse_result <= 0) //more data required
     {
-        if(read_result > 0) //buffer is over, but header hasn't ended yet
+        if(read_result > 0 || parse_result < 0) //buffer is over, but header hasn't ended yet
         {
+            dbgprint(("parse-fast error\n"));
             LpxFinWr(sda, &LpxErrGlobal400);
             return;
         }
+        dbgprint(("parse-more data\n"));
         return; //wait for more data
     }
+    dbgprint(("parse-done\n"));
     parse_result = LpxParseMain(sda);
     if (parse_result < 0) //error happened
     {
@@ -120,6 +127,7 @@ void LpxCbParse(SD * sda)
 void LpxCbRead(SD * sda)
 {
     int read_result, write_result;
+    dbgprint(("cb read\n"));
     do
     {
         read_result = LpxNetRead(sda, 1); //read from current socket
