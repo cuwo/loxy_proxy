@@ -8,6 +8,7 @@ void LpxCbKill(SD * sda)
 
 void LpxPP(SD * sda, unsigned int flags)
 {
+    extern LpxList LpxSdGlobalListPP;
     LpxSdSetFlag(sda, LPX_FLAG_PP | flags);
     LpxListAddTail(&LpxSdGlobalListPP, &(sda->pp_list));
 }
@@ -112,7 +113,7 @@ void LpxCbParse(SD * sda)
         LpxFinWr(sda, &LpxErrGlobal407);
         return;
     }
-    LpxDnsGo(sda); //make new connection
+    //LpxDnsGo(sda); //make new connection
 }
 
 //main callback (and the most complicated one)
@@ -124,12 +125,12 @@ void LpxCbRead(SD * sda)
         read_result = LpxNetRead(sda, 1); //read from current socket
         write_result = LpxNetWrite(sda->other); //write to the other one
     }
-    while(read_result == 1 && write_result == 1) //pass the traffic until block or fail
+    while(read_result == 1 && write_result == 1); //pass the traffic until block or fail
     
     if (read_result < 0) //read failed. close this side and finish the other.
     {
         LpxSdSetFlag(sda, LPX_FLAG_DEAD);
-        LpxFinWr(sda->other);
+        LpxFinWr(sda->other, NULL);
         return;
     }
     if (write_result < 0) //write failed. plan the reading from that side.
@@ -137,7 +138,7 @@ void LpxCbRead(SD * sda)
         LpxPP(sda->other, LPX_FLAG_PP_READ);
         return;
     }
-    if (sda -> limit == 0) //pass limit expired, make the socket back to HTTP and do parse
+    if (sda -> http_limit == 0) //pass limit expired, make the socket back to HTTP and do parse
         return LpxCbParse(sda);
     if (read_result == 1) //unlock required later
     {
