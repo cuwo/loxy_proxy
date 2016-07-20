@@ -31,7 +31,6 @@
 #define LPX_FLAG_TGET 8192 //get request type
 #define LPX_FLAG_TPOST 16384 //post request type
 #define LPX_FLAG_TCON 32768 //connect request type
-#define LPX_FLAG_GETPOST (LPX_FLAG_GET | LPX_FLAG_POST) //to clear get/post flags
 #define LPX_FLAG_LISTEN 65536 //listen socket
 #define LPX_FLAG_PP_KILL 131072 //post-processing, kill
 #define LPX_FLAG_PP_WRITE 262144 //post-processing, write
@@ -40,6 +39,7 @@
 #define LPX_FLAG_AUTH 1048576 //authentificated
 #define LPX_FLAG_LOCK 2097152 //requires locking
 #define LPX_FLAG_PP_HTTP 4194304
+#define LPX_FLAG_PARSE_DEL 8388608
 //main data structure in the project
 
 typedef struct LpxBuf
@@ -68,9 +68,10 @@ typedef union SocketDescriptor
         struct sockaddr_in dst_adr; //target local address where req came to
         struct sockaddr_in trg_adr; //target address where to connect
         char host[LPX_SD_HOST_SIZE]; //target host string
+        int host_size;
         char service[6]; //target port string
         int http_limit; //in case of POST request, for mode switch
-        int http_temp2;
+        int http_parse_ptr;
         union
         {
             struct

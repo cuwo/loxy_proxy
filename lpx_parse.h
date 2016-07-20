@@ -4,6 +4,8 @@
 #include "lpx_sd.h"
 #include "lpx_dbg.h"
 
+extern char * temp_buf;
+
 //check if the http header has received completely
 //also checks for bad symbols
 //returns 0 in case of fail, -1 in case of no header end

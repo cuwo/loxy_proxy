@@ -42,8 +42,72 @@ int LpxParseFastCheck(SD * sda)
     return 0; //say more data is required
 }
 
+void LpxParseLowercase(SD * sda)
+{
+    int i;
+    char c;
+    for (i = 0; i < sda->http_in_ptr; i++)
+    {
+        c = sda->http_in_data[i];
+        if (c >= 'A' && c <= 'Z')
+            temp_buf[i] = c + ('a' - 'A');
+        else
+            temp_buf[i] = c;
+    }
+}
+
+int LpxParseReqType(SD * sda)
+{
+    LpxSdClearFlag(sda, LPX_FLAG_TGET | LPX_FLAG_TPOST | LPX_FLAG_TCON);
+    if (memcmp(temp_buf, "get ", 4) == 0)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_TGET);
+        sda->http_parse_ptr += 4;
+        return 1;
+    }
+    if (memcmp(temp_buf, "post ", 5) == 0)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_TPOST);
+        sda->http_parse_ptr += 5;
+        return 1;
+    }
+    if (memcmp(temp_buf, "connect ", 8) == 0)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_TCON);
+        sda->http_parse_ptr += 8;
+        return 1;
+    }
+    return 0;
+}
+
+int LpxParseHost(SD * sda)
+{
+    
+}
+
 int LpxParseMain(SD * sda)
 {
-    //not implemented yet
+    //not fully implemented yet
+    sda->http_parse_ptr = 0;
+    LpxParseLowercase(sda);
+    //if can't parse request type - error
+    if (!LpxParseReqType(sda))
+    {
+        dbgprint(("advparse - type err\n"));
+        return -1;
+    }
+    //connect request is allowed only as first request (change it maybe?)
+    if (LpxSdGetFlags(LPX_FLAG_CON | LPX_FLAG_TCON))
+    {
+        dbgprint(("advparse - conn but con\n"));
+        return -1;
+    }
+    //don't allow post as first request (change it later?)
+    if (sd->other == NULL && LpxSdGetFlag(LPX_FLAG_TPOST))
+    {
+        dbgprint(("advparse - post on conn\n"));
+        return -1;
+    }
+    
     return -1;
 }

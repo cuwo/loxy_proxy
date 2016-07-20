@@ -151,11 +151,11 @@ int main(int argc, char ** argv)
             }
             if(LpxSdGetFlag(sda, LPX_FLAG_PP_READ))
             {
-                LpxCbRead(sda);
-            }
-            if(LpxSdGetFlag(sda, LPX_FLAG_PP_HTTP))
-            {
-                LpxCbParse(sda);
+                LpxSdClearFlag(sda, LPX_FLAG_PP_READ);
+                if (LpxSdGetFlag(sda, LPX_FLAG_HTTP))
+                    LpxCbParse(sda);
+                else
+                    LpxCbRead(sda);
             }
             if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL) || (LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0))
             {

@@ -92,26 +92,41 @@ void LpxCbParse(SD * sda)
 {
     int read_result, parse_result;
     dbgprint(("cb parse\n"));
-    read_result = LpxNetRead(sda, 0);
-    if (read_result < 0)
+    if (!LpxSdGetFlag(sda, LPX_FLAG_PARSE_DEL))
     {
-        dbgprint(("cb parse - fast fail\n"));
-        LpxSdSetFlag(sda, LPX_FLAG_DEAD);
-        return;
-    }
-    parse_result = LpxParseFastCheck(sda);
-    if (parse_result <= 0) //more data required
-    {
-        if(read_result > 0 || parse_result < 0) //buffer is over, but header hasn't ended yet
+        read_result = LpxNetRead(sda, 0);
+        if (read_result < 0)
         {
-            dbgprint(("parse-fast error\n"));
-            LpxFinWr(sda, &LpxErrGlobal400);
+            dbgprint(("cb parse - fast fail\n"));
+            LpxSdSetFlag(sda, LPX_FLAG_DEAD);
             return;
         }
-        dbgprint(("parse-more data\n"));
-        return; //wait for more data
+        parse_result = LpxParseFastCheck(sda);
+        if (parse_result <= 0) //more data required
+        {
+            if(read_result > 0 || parse_result < 0) //buffer is over, but header hasn't ended yet
+            {
+                dbgprint(("parse-fast error\n"));
+                LpxFinWr(sda, &LpxErrGlobal400);
+                return;
+            }
+            dbgprint(("parse-more data\n"));
+            return; //wait for more data
+        }
+    }
+    else
+    {
+        dbgprint(("parse delay unlock\n"));
+        LpxSdClearFlag(sda, LPX_FLAG_PARSE_DEL);
     }
     dbgprint(("parse-done\n"));
+    //if there is no space in output buffer where to put the http request, delay the processing
+    if (sda->other != NULL && sda -> http_in_ptr < (LPX_SD_HTTP_BUF_SIZE - sda -> other -> http_out_size))
+    {
+        dbgprint(("parse delay happened\n"));
+        LpxSdSetFlag(sda, LPX_FLAG_LOCK | LPX_FLAG_PARSE_DEL);
+        return LpxCbWrite(sda->other);
+    }
     parse_result = LpxParseMain(sda);
     if (parse_result < 0) //error happened
     {
