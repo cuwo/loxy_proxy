@@ -2,6 +2,7 @@
 #include "includes.h"
 #include "lpx_list.h"
 #include "lpx_mem.h"
+#include "lpx_dbg.h"
 
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024

@@ -51,6 +51,7 @@ void LpxSdDestroy(SD * sda)
     LpxListRemove(&(sda->sd_list)); //remove from the main SD list
     LpxListRemove(&(sda->dns_list)); //remove it from other lists
     LpxListRemove(&(sda->pp_list));
+    dbgprint(("closing socket %d\n", sda->fd));
     LpxSdClose(sda); //close connections (if not done yet)
     LpxMemPoolFree(sda); //free the allocated pool
 }

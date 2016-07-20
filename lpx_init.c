@@ -9,14 +9,14 @@ char * LpxErrorPrepare(const char * err, const char * text, const char * additio
     len = strlen(temp_2);
     sprintf(temp_buf, "HTTP/1.0 %s\r\nContent-Type: text/html\r\nContent-Length: %d\r\n"
     "Content-Language: en\r\nConnection: keep-alive%s\r\n\r\n%s", err, len, additional_header, temp_2);
-    return temp_2;
+    return temp_buf;
 }
 
 void LpxErrorInit()
 {
     LpxConstStringInit(&LpxErrGlobal400, LpxErrorPrepare("400 Bad Request", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>"
-    "<p>Loxy-Proxy failed to parse the HTTP request. Probably there is something wrong.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
+    "<p>Loxy-Proxy has failed to parse the HTTP request. Probably there is something wrong.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
     ""));
     LpxConstStringInit(&LpxErrGlobal407, LpxErrorPrepare("407 Proxy Authentication Required", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>407 Proxy Authentication Required</title>\n</head><body>\n<h1>Authentication Required</h1>"
@@ -24,11 +24,11 @@ void LpxErrorInit()
     "Proxy-Authenticate: Basic realm=\"Loxy-Proxy v4\"\r\n"));    
     LpxConstStringInit(&LpxErrGlobal503, LpxErrorPrepare("503 Service Unavailable", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>503 Service Unavailable</title>\n</head><body>\n<h1>Service Unavailable</h1>"
-    "<p>Loxy-Proxy failed to find the requested domain. Probably you made the mistake in the address part.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
+    "<p>Loxy-Proxy has failed to find the requested domain. Probably you made the mistake in the address part.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
     ""));
     LpxConstStringInit(&LpxErrGlobal504, LpxErrorPrepare("504 Gateway Timeout", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>504 Gateway Timeout</title>\n</head><body>\n<h1>Gateway Timeout</h1>"
-    "<p>Loxy-Proxy failed to connect to the requested address. Probably it's down.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
+    "<p>Loxy-Proxy has failed to connect to the requested address. Probably it's down.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
     ""));
 
 }

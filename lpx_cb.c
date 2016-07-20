@@ -25,6 +25,7 @@ void LpxFinWr(SD * sda, LpxConstString * err)
         //if there is enough space
         if(temp <= (LPX_SD_HTTP_BUF_SIZE - sda->http_out_size))
         {
+            dbgprint(("adding %d bytes already %d full %d\n",temp, sda->http_out_size,LPX_SD_HTTP_BUF_SIZE));
             memcpy(sda->http_out_data + sda->http_out_size, err->buf, temp);
             sda->http_out_size += temp;
         }
