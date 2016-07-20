@@ -9,6 +9,8 @@ void LpxCbKill(SD * sda)
 void LpxPP(SD * sda, unsigned int flags)
 {
     extern LpxList LpxSdGlobalListPP;
+    if (sda == NULL)
+        return;
     LpxSdSetFlag(sda, LPX_FLAG_PP | flags);
     LpxListAddTail(&LpxSdGlobalListPP, &(sda->pp_list));
 }

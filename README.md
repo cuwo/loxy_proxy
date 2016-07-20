@@ -4,7 +4,7 @@ simple http proxy with good performance
 the design ideas are complete
 the implementation is still in progress
 
-current progress: 50%
+current progress: 70%
 
 TODO:
 
