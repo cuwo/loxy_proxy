@@ -89,7 +89,7 @@ int LpxParseReqType(SD * sda)
 int LpxParseHost(SD * sda)
 {
     int port, temp;
-    char * tcs, * tcp;
+    char * tcs = NULL, * tcp = NULL, c = 0, * host_end;
     char * input = sda->http_in_data + sda->http_parse_ptr;
     if (LpxSdGetFlag(sda, LPX_FLAG_TCON)) //set default port values
     {
@@ -100,17 +100,17 @@ int LpxParseHost(SD * sda)
         port = 80;
     }
     //try to get port values from address prefix
-    if (memcmp(input, "http://", 7)
+    if (memcmp(input, "http://", 7)==0)
     {
         sda->http_parse_ptr += 7;
         port = 80;
     }
-    if (memcmp(input, "https://", 8)
+    if (memcmp(input, "https://", 8)==0)
     {
         sda->http_parse_ptr += 8;
         port = 443;
     }
-    if (memcmp(input, "ftp://", 6)
+    if (memcmp(input, "ftp://", 6)==0)
     {
         sda->http_parse_ptr += 6;
         port = 22;
@@ -120,22 +120,29 @@ int LpxParseHost(SD * sda)
         sda->http_parse_ptr += 1;
         return 0; //host wasn't updated
     }
-    input = sda->http_in_data + sda->http_parse_ptr;
-    tcs = strchr(input, '/');
-    tcp = strchr(input, ':');
-    if (tcs == NULL || (tcs - sda->http_in_data) > http_in_ptr)
+    tcs = input = sda->http_in_data + sda->http_parse_ptr;
+    while ((c = *tcs) != '/' && c > 0x20 && tcs < sda->http_in_data + sda->http_in_ptr)
+    {
+        if (c == ':')
+            tcp = tcs;
+        ++tcs;
+    }
+    if (c != '/' && !LpxSdGetFlag(sda, LPX_FLAG_TCON))
     {
         return -1; //some error happened
     }
-    if (tcp < tcs) //parse connection port
+    if (tcp != NULL && tcp < tcs) //parse connection port
     {
+        host_end = tcp;
         temp = atoi(tcp + 1);
         if (temp > 0)
             port = temp;
     }
+    else
+        host_end = tcs;
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN)) //already connected
     {
-        if (memcmp(tcs + 1, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
+        if (memcmp(input + 1, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
             return -1;
         sda->http_parse_ptr = tcs + 1 - sda->http_in_data;
         return 0; //host wasn't updated
@@ -145,7 +152,7 @@ int LpxParseHost(SD * sda)
         return -1;
     else //copy host data
     {
-        sda->host_size = temp = tcs - input;
+        sda->host_size = temp = host_end - input;
         memcpy(sda->host, input, temp);
         sda->host[temp] = 0;
         dbgprint(("host parse: port %d host ^%s^\n", sda->port, sda->host));
@@ -157,25 +164,28 @@ int LpxParseHost(SD * sda)
 int LpxParseMain(SD * sda)
 {
     //not fully implemented yet
+    dbgprint(("parse lowercase\n"));
     LpxParseLowercase(sda);
     //if can't parse request type - error
+    dbgprint(("parse req type\n"));
     if (!LpxParseReqType(sda))
     {
         dbgprint(("advparse - type err\n"));
         return -1;
     }
     //connect request is allowed only as first request (change it maybe?)
-    if (LpxSdGetFlags(LPX_FLAG_CON | LPX_FLAG_TCON))
+    if (LpxSdGetFlags(sda, LPX_FLAG_CONN | LPX_FLAG_TCON))
     {
         dbgprint(("advparse - conn but con\n"));
         return -1;
     }
     //don't allow post as first request (change it later?)
-    if (sd->other == NULL && LpxSdGetFlag(LPX_FLAG_TPOST))
+    if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_TPOST))
     {
         dbgprint(("advparse - post on conn\n"));
         return -1;
     }
+    dbgprint(("parse host\n"));
     if (LpxParseHost(sda) < 0)
         return -1;
     return -1;
