@@ -69,9 +69,11 @@ typedef union SocketDescriptor
         struct sockaddr_in trg_adr; //target address where to connect
         char host[LPX_SD_HOST_SIZE]; //target host string
         int host_size;
+        int port;
         char service[6]; //target port string
         int http_limit; //in case of POST request, for mode switch
         int http_parse_ptr;
+        int http_temp_ptr;
         union
         {
             struct
