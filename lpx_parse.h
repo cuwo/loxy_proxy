@@ -2,9 +2,12 @@
 
 #include "includes.h"
 #include "lpx_sd.h"
+#include "lpx_mt.h"
 #include "lpx_dbg.h"
 
 extern char * temp_buf;
+
+extern LpxConstString LpxGlobalPassData;
 
 //check if the http header has received completely
 //also checks for bad symbols

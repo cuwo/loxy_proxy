@@ -145,6 +145,8 @@ void LpxCbParse(SD * sda)
 void LpxCbRead(SD * sda)
 {
     int read_result, write_result;
+    if (LpxSdGetFlag(sda, LPX_FLAG_HTTP))
+        return LpxCbParse(sda);
     dbgprint(("cb read\n"));
     do
     {
@@ -165,7 +167,10 @@ void LpxCbRead(SD * sda)
         return;
     }
     if (sda -> http_limit == 0) //pass limit expired, make the socket back to HTTP and do parse
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_HTTP);
         return LpxCbParse(sda);
+    }
     if (read_result == 1) //unlock required later
     {
         LpxSdSetFlag(sda->other, LPX_FLAG_LOCK);

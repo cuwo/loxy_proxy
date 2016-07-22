@@ -63,7 +63,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TGET);
         sda->http_parse_ptr = 4;
-        memcpy(temp_buf + LPX_SD_SIZE/2, temp_buf, 4);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 4);
         sda->http_temp_ptr = 4;
         return 1;
     }
@@ -71,7 +71,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TPOST);
         sda->http_parse_ptr = 5;
-        memcpy(temp_buf + LPX_SD_SIZE/2, temp_buf, 5);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 5);
         sda->http_temp_ptr = 5;
         return 1;
     }
@@ -79,7 +79,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TCON);
         sda->http_parse_ptr = 8;
-        memcpy(temp_buf + LPX_SD_SIZE/2, temp_buf, 8);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 8);
         sda->http_temp_ptr = 8;
         return 1;
     }
@@ -121,7 +121,7 @@ int LpxParseHost(SD * sda)
         return 0; //host wasn't updated
     }
     tcs = input = sda->http_in_data + sda->http_parse_ptr;
-    while ((c = *tcs) != '/' && c > 0x20 && tcs < sda->http_in_data + sda->http_in_ptr)
+    while ((c = *tcs) != '/' && c > 0x20)
     {
         if (c == ':')
             tcp = tcs;
@@ -140,11 +140,11 @@ int LpxParseHost(SD * sda)
     }
     else
         host_end = tcs;
+    sda->http_parse_ptr = tcs - sda->http_in_data;
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN)) //already connected
     {
         if (memcmp(input + 1, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
             return -1;
-        sda->http_parse_ptr = tcs + 1 - sda->http_in_data;
         return 0; //host wasn't updated
     }
     sda->port = port;
@@ -161,8 +161,60 @@ int LpxParseHost(SD * sda)
     return 1;
 }
 
+int LpxParseHeaders(SD * sda)
+{
+    char * out_data, * in_data, * in_lowercase, *tc, c, auth = 0;
+    int temp;
+    if (LpxGlobalPassData.buf == NULL)
+        auth = 1;
+    sda->http_limit = 0;
+    //copy the rest of first header
+    out_data = temp_buf + LPX_SD_SIZE/2 + sda->http_temp_ptr;
+    in_data = sda->http_in_data + sda->http_parse_ptr;
+    do
+    {
+        c = *in_data;
+        *out_data = c;
+        ++in_data;
+        ++out_data;
+    }
+    while( c != '\n' );
+    //parse other headers
+    in_lowercase = (in_data - sda->http_in_data + temp_buf);
+    while( *in_data != '\r' )
+    {
+        tc = strchr(in_data, '\r') + 2;
+        temp = tc - in_data;
+        if (memcmp(in_lowercase, "content-length: ", 16) == 0)
+        {
+            sda->http_limit = atoi(in_lowercase + 16);
+        }
+        else if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
+        {
+            if (LpxGlobalPassData.buf != NULL && memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0)
+                auth = 1;
+        }
+        else if (memcmp(in_lowercase, "proxy", 5) == 0)
+        {
+            
+        }
+        else //copy the whole header
+        {
+            memcpy(out_data, in_data, temp);
+            out_data += temp;
+        }
+        in_data += temp;
+        in_lowercase += temp;
+    }
+    memcpy(out_data, in_data, 2);
+    sda->http_temp_ptr = out_data - (temp_buf + LPX_SD_SIZE/2) + 2;
+    sda->http_parse_ptr = in_lowercase - temp_buf + 2;
+    return auth;
+}
+
 int LpxParseMain(SD * sda)
 {
+    int result;
     //not fully implemented yet
     dbgprint(("parse lowercase\n"));
     LpxParseLowercase(sda);
@@ -188,5 +240,9 @@ int LpxParseMain(SD * sda)
     dbgprint(("parse host\n"));
     if (LpxParseHost(sda) < 0)
         return -1;
-    return -1;
+    result = LpxParseHeaders(sda);
+    if (result <= 0)
+        return result;
+    if (sda->host_size == 0 || sda->port == 0)
+        return -1;
 }

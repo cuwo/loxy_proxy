@@ -109,14 +109,8 @@ int main(int argc, char ** argv)
                     LpxCbKill(sda);
                     continue;
                 }
-                
-                //perform http parsing
-                if (LpxSdGetFlag(sda, LPX_FLAG_HTTP) && (events[i].events & EPOLLIN))
-                {
-                    LpxCbParse(sda);
-                }
-                //perform passthrough reading
-                if (LpxSdGetFlag(sda, LPX_FLAG_CONN) && (events[i].events & EPOLLIN))
+                //perform passthrough reading or http parsing
+                if (LpxSdGetFlag(sda, LPX_FLAG_CONN | LPX_FLAG_HTTP) && (events[i].events & EPOLLIN))
                 {
                     LpxCbRead(sda);
                 }
@@ -151,11 +145,7 @@ int main(int argc, char ** argv)
             }
             if(LpxSdGetFlag(sda, LPX_FLAG_PP_READ))
             {
-                LpxSdClearFlag(sda, LPX_FLAG_PP_READ);
-                if (LpxSdGetFlag(sda, LPX_FLAG_HTTP))
-                    LpxCbParse(sda);
-                else
-                    LpxCbRead(sda);
+                LpxCbRead(sda);
             }
             if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL) || (LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0))
             {
