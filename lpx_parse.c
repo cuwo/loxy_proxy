@@ -63,7 +63,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TGET);
         sda->http_parse_ptr = 4;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 4);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 4);
         sda->http_temp_ptr = 4;
         return 1;
     }
@@ -71,7 +71,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TPOST);
         sda->http_parse_ptr = 5;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 5);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 5);
         sda->http_temp_ptr = 5;
         return 1;
     }
@@ -79,7 +79,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TCON);
         sda->http_parse_ptr = 8;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_buf, 8);
+        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 8);
         sda->http_temp_ptr = 8;
         return 1;
     }
@@ -206,9 +206,10 @@ int LpxParseHeaders(SD * sda)
         in_data += temp;
         in_lowercase += temp;
     }
-    memcpy(out_data, in_data, 2);
+    memcpy(out_data, "\r\n", 3);
     sda->http_temp_ptr = out_data - (temp_buf + LPX_SD_SIZE/2) + 2;
     sda->http_parse_ptr = in_lowercase - temp_buf + 2;
+    dbgprint(("parse out: ^%s^\n", temp_buf + LPX_SD_SIZE/2));
     return auth;
 }
 
