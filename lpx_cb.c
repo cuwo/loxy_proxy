@@ -134,13 +134,13 @@ void LpxCbConnect(SD * sda)
         dbgprint(("can't create new socket\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);
     }
-    new_sd = LpxSdCreate();
     //perform connection
     adrin = & (sda->dst_adr);
     adrin -> sin_port = 0; //any port
     temp = bind(tfd, (struct sockaddr*)adrin, sizeof(struct sockaddr_in));
     if (temp != 0)
     {
+        close(tfd);
         dbgprint(("can't bind to IP\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);
     }
@@ -148,9 +148,11 @@ void LpxCbConnect(SD * sda)
     temp = connect(tfd, (struct sockaddr *) & (sda->trg_adr), sizeof(struct sockaddr_in));
     if (temp != 0 && errno != EINPROGRESS)
     {
+        close(tfd);
         dbgprint(("connect fail\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);
     }
+    new_sd = LpxSdCreate();
     LpxSdInit(new_sd, tfd, LPX_FLAG_OPEN | LPX_FLAG_SERVER | LPX_FLAG_WCON, 
                 sda->efd, EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP);
     new_sd->http_limit = -1;
