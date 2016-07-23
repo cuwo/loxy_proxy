@@ -35,17 +35,44 @@ void LpxFinWr(SD * sda, LpxConstString * err)
     LpxPP(sda, LPX_FLAG_PP_WRITE);
 }
 
-void LpxCbDns(SD * sda)
+void LpxCbDns(SD * sd_dns)
 {
     extern LpxList LpxSdGlobalListDns;
+    struct signalfd_siginfo fdsi;
+    int temp;
+    SD * sda;
     LpxList * list_elem;
     dbgprint(("cb dns is called\n"));
     //read the socket to block it
-    return;
+    do
+    {
+        temp = read(sd_dns->fd, &fdsi, sizeof(struct signalfd_siginfo));
+    }
+    while (temp > 0);
+    //process all requests
     list_elem = LpxSdGlobalListDns.next;
     while(list_elem != NULL)
     {
-        //not implemented yet
+        sda = LPX_SD_FROM_DNS_LIST(list_elem);
+        //get next elem
+        LpxListRemove(list_elem);
+        list_elem = LpxSdGlobalListDns.next;
+        //check if the request is done
+        temp = gai_error(&(sda->dns_gai));
+        if (temp != EAI_INPROGRESS)
+        {
+            LpxSdClearFlag(sda, LPX_FLAG_WAIT);
+            if (sda->dns_gai->ar_result == NULL) //not resolved? say error
+            {
+                LpxFinWr(sda, &LpxErrGlobal503);
+            }
+            else
+            {
+                LpxSdSetFlag(sda, LPX_FLAG_DNS);
+                LpxCbConnect(sda);
+            }
+        }
+        
     }
 }
 
@@ -54,6 +81,7 @@ void LpxCbConnect(SD * sda)
     dbgprint(("cb connect is called\n"));
     //perform connection 
     
+    //if the DNS wasn't successful, close
     
     //finish the http parsing
     return LpxParseFinish(sda);

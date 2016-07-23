@@ -16,6 +16,7 @@
 #define LPX_SD_FROM_OFFSET(ptr, offset) ((SD*)( ((char*)(ptr)) - offset ))
 #define LPX_SD_FROM_MAIN_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, sd_list))
 #define LPX_SD_FROM_PP_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, pp_list))
+#define LPX_SD_FROM_DNS_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, dns_list))
 
 //all kinds of flags
 #define LPX_FLAG_OPEN 1 //socket is opened

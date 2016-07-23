@@ -44,26 +44,6 @@ void LpxParseFinish(SD * sda)
     LpxPP(sda, LPX_FLAG_PP_READ);
 }
 
-void LpxParseFinishHttp(SD * sda)
-{
-    //copy the parsed request to other's output
-    memcpy(sda->other->http_out_data + sda->other->http_out_size,
-            sda->http_temp_data, sda->http_temp_ptr);
-    sda->other->http_out_size += sda->http_temp_ptr;
-    assert(sda->other->http_out_size <= LPX_SD_HTTP_BUF_SIZE);
-    //plan the writing
-    LpxPP(sda->other, LPX_FLAG_PP_WRITE);
-    //cut the parsed http data
-    memcpy(sda->http_in_data, sda->http_in_data + sda->http_parse_ptr, sda->http_in_size - sda->http_parse_ptr);
-    sda->http_parse_ptr = 0;
-    sda->http_in_ptr = 0;
-    sda->http_limit = 0;
-    sda->http_temp_ptr = 0;
-    sda->http_in_size = sda->http_in_size - sda->http_parse_ptr;
-    //plan the further HTTP parsing
-    LpxPP(sda, LPX_FLAG_PP_READ);
-}
-
 void LpxParseFinishDns(SD * sda)
 {
     struct gaicb * gaiptr;
@@ -73,6 +53,7 @@ void LpxParseFinishDns(SD * sda)
     result = inet_pton(AF_INET, sda->host, &(sda->trg_adr.sin_addr));
     if (result == 1)
     {
+        LpxSdSetFlag(sda, LPX_FLAG_DNS);
         return LpxCbConnect(sda);
     }
     //fail? then call DNS
