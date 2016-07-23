@@ -4,15 +4,15 @@ simple http proxy with good performance
 the design ideas are complete
 the implementation is still in progress
 
-current progress: 80%
+current progress: 90%
 
 TODO:
 
 - timeout checking
-- make everything working
 
 DONE:
 
+- make everything working
 - memory pool allocation
 - mainternance init
 - epoll cycle for everything
