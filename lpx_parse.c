@@ -238,12 +238,6 @@ int LpxParseMain(SD * sda)
         dbgprint(("advparse - conn but con\n"));
         return -1;
     }
-    //don't allow post as first request (change it later?)
-    if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_TPOST))
-    {
-        dbgprint(("advparse - post on conn\n"));
-        return -1;
-    }
     dbgprint(("parse host\n"));
     if (LpxParseHost(sda) < 0)
         return -1;

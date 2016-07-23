@@ -77,7 +77,7 @@ int main(int argc, char ** argv)
                 }
                 else //DNS processing
                 {
-                
+                    LpxCbDns(sda);
                 }
             }
             else
@@ -86,6 +86,11 @@ int main(int argc, char ** argv)
                 if ((events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) && !LpxSdGetFlag(sda, LPX_FLAG_CONN))
                 {
                     LpxCbKill(sda);
+                    continue;
+                }
+                //don't do anything when socket is waiting for DNS
+                if (LpxSdGetFlag(sda, LPX_FLAG_WAIT))
+                {
                     continue;
                 }
                 //timeout control

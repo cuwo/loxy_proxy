@@ -24,3 +24,5 @@ void LpxCbParse(SD * sda);
 void LpxPPKill(SD * sda, unsigned int flags);
 
 void LpxFinWr(SD * sda, LpxConstString * err);
+
+void LpxCbDns(SD * sda);

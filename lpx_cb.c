@@ -35,6 +35,11 @@ void LpxFinWr(SD * sda, LpxConstString * err)
     LpxPP(sda, LPX_FLAG_PP_WRITE);
 }
 
+void LpxCbDns(SD * sda)
+{
+    dbgprint(("cb dns is called\n"));
+}
+
 void LpxCbAccept(SD * sda)
 {
     int accept_fd, temp;
@@ -145,7 +150,14 @@ void LpxParseFinishHttp(SD * sda)
 
 void LpxParseFinishDns(SD * sda)
 {
-    
+    struct gaicb * gaiptr;
+    extern LpxList LpxSdGlobalListDns;
+    gaiptr = &(sda->dns_gai);
+    getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->host));
+    LpxSdSetFlag(sda, LPX_FLAG_WAIT);
+    LpxListAddTail(&LpxSdGlobalListDns, &(sda->service));
+    dbgprint(("dns finish called\n"));
+    //don't do anything to http parsed data, process it later
 }
 
 void LpxCbParse(SD * sda)
