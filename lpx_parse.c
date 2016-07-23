@@ -200,6 +200,12 @@ int LpxParseHeaders(SD * sda)
         }
         else //copy the whole header
         {
+            //save the host, if there were no already
+            if (sda->host_size == 0 && memcmp(in_lowercase, "host: ", 6) == 0)
+            {
+                sda->host_size = temp - 8;
+                memcpy(sda->host, in_data + 6, sda->host_size);
+            }
             memcpy(out_data, in_data, temp);
             out_data += temp;
         }
@@ -244,6 +250,11 @@ int LpxParseMain(SD * sda)
     result = LpxParseHeaders(sda);
     if (result <= 0)
         return result;
+    //check for errors
+    if (sda->http_in_ptr != sda->http_parse_ptr)
+    {
+        dbgprint(("!!inprt != parseptr!!\n"));
+    }
     if (sda->host_size == 0 || sda->port == 0)
         return -1;
 }

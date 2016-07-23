@@ -77,15 +77,75 @@ void LpxCbWrite(SD * sda)
     }
     else if (res < 0)
     {
-        if (LpxSdGetFlag(sda, LPX_FLAG_HTTP))
-        {
-            return LpxCbParse(sda);
-        }
-        else
-        {
-            return LpxCbRead(sda);
-        }
+        return LpxCbRead(sda);
     }
+}
+
+void LpxParseFinishPass(SD * sda)
+{
+    int rest_data_size, out_free_space, required_data_pass, http_req_size, size_to_skip;
+    rest_data_size = sda->http_in_size - sda->http_parse_ptr;
+    out_free_space = LPX_SD_HTTP_BUF_SIZE - sda->other->http_out_size;
+    http_req_size = sda->http_temp_ptr;
+    required_data_pass = sda->http_limit;
+    size_to_skip = required_data_pass + sda->http_parse_ptr;
+    //we delayed the http parsing until this, so it must be true
+    assert(http_req_size + rest_data_size <= out_free_space);
+    //copy the output request
+    memcpy(sda->other->http_out_data + sda->other->http_out_size, temp_buf + LPX_SD_SIZE/2, http_req_size);
+    sda->other->http_out_size += http_req_size;
+    if (rest_data_size > required_data_pass) //we can process pass w/o mode switching
+    {
+        //copy the data
+        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_parse_ptr, required_data_pass);
+        sda->other->http_out_size += required_data_pass;
+        //prepare for the next part parsing
+        memcpy(sda->http_in_data, sda->http_in_data + size_to_skip, size_to_skip);
+        sda->http_in_size -= size_to_skip;
+        assert(sda->http_in_size >= 0);
+        sda->http_limit = 0;
+    }
+    else //we have to switch the mode
+    {
+        //copy the data part
+        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_parse_ptr, rest_data_size);
+        sda->other->http_out_size += rest_data_size;
+        sda->http_limit -= rest_data_size;
+        sda->http_in_size = 0;
+        LpxSdClearFlag(LPX_FLAG_HTTP); //switch the reading mode
+    }
+    sda->http_parse_ptr = 0;
+    sda->http_in_ptr = 0;
+    sda->http_temp_ptr = 0;
+    //plan the writing
+    LpxPP(sda->other, LPX_FLAG_PP_WRITE);
+    //plan further reading/parsing
+    LpxPP(sda, LPX_FLAG_PP_READ);
+}
+
+void LpxParseFinishHttp(SD * sda)
+{
+    //copy the parsed request to other's output
+    memcpy(sda->other->http_out_data + sda->other->http_out_size,
+            temp_buf + LPX_SD_SIZE/2, sda->http_temp_ptr);
+    sda->other->http_out_size += sda->http_temp_ptr;
+    assert(sda->other->http_out_size <= LPX_SD_HTTP_BUF_SIZE);
+    //plan the writing
+    LpxPP(sda->other, LPX_FLAG_PP_WRITE);
+    //cut the parsed http data
+    memcpy(sda->http_in_data, sda->http_in_data + sda->http_parse_ptr, sda->http_in_size - sda->http_parse_ptr);
+    sda->http_parse_ptr = 0;
+    sda->http_in_ptr = 0;
+    sda->http_limit = 0;
+    sda->http_temp_ptr = 0;
+    sda->http_in_size = sda->http_in_size - sda->http_parse_ptr;
+    //plan the further HTTP parsing
+    LpxPP(sda, LPX_FLAG_PP_READ);
+}
+
+void LpxParseFinishDns(SD * sda)
+{
+    
 }
 
 void LpxCbParse(SD * sda)
@@ -119,16 +179,16 @@ void LpxCbParse(SD * sda)
         dbgprint(("parse delay unlock\n"));
         LpxSdClearFlag(sda, LPX_FLAG_PARSE_DEL);
     }
-    dbgprint(("parse-done\n"));
+    dbgprint(("fast parse-done\n"));
     //if there is no space in output buffer where to put the http request, delay the processing
-    if (sda->other != NULL && sda -> http_in_ptr < (LPX_SD_HTTP_BUF_SIZE - sda -> other -> http_out_size))
+    if (sda->other != NULL && sda -> http_in_size > (LPX_SD_HTTP_BUF_SIZE - sda -> other -> http_out_size))
     {
         dbgprint(("parse delay happened\n"));
         LpxSdSetFlag(sda, LPX_FLAG_LOCK | LPX_FLAG_PARSE_DEL);
         return LpxCbWrite(sda->other);
     }
     parse_result = LpxParseMain(sda);
-    if (parse_result < 0) //error happened
+    if (parse_result < 0 || sda->host_size == 0) //error happened
     {
         LpxFinWr(sda, &LpxErrGlobal400);
         return;
@@ -138,7 +198,22 @@ void LpxCbParse(SD * sda)
         LpxFinWr(sda, &LpxErrGlobal407);
         return;
     }
-    //LpxDnsGo(sda); //make new connection
+    dbgprint(("parse-success\n"));
+    if (LpxSdGetFlag(sda, LPX_FLAG_CONN))
+    {
+        if (sda->http_limit > 0)
+        {
+            return LpxParseFinishPass(sda);
+        }
+        else
+        {
+            return LpxParseFinishHttp(sda);
+        }
+    }
+    else
+    {
+        LpxParseFinishDns(SD * sda);
+    }
 }
 
 //main callback (and the most complicated one)
