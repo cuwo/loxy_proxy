@@ -62,7 +62,7 @@ void LpxCbDns(SD * sd_dns)
         if (temp != EAI_INPROGRESS)
         {
             LpxSdClearFlag(sda, LPX_FLAG_WAIT);
-            if (sda->dns_gai->ar_result == NULL) //not resolved? say error
+            if (sda->dns_gai.ar_result == NULL) //not resolved? say error
             {
                 LpxFinWr(sda, &LpxErrGlobal503);
             }
@@ -79,6 +79,8 @@ void LpxCbDns(SD * sd_dns)
 void LpxCbConnect(SD * sda)
 {
     dbgprint(("cb connect is called\n"));
+    //not implemented yet
+    return;
     //perform connection 
     
     //if the DNS wasn't successful, close
