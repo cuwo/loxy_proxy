@@ -101,6 +101,8 @@ void LpxCbSuccess(SD * sda)
     //clear the waiting flags
     LpxSdClearFlag(sda, LPX_FLAG_WCON);
     LpxSdClearFlag(sda->other, LPX_FLAG_WAIT);
+    //finish the http parsing
+    return LpxParseFinish(sda);
 }
 
 void LpxCbConnect(SD * sda)
@@ -133,8 +135,6 @@ void LpxCbConnect(SD * sda)
     //link both sides
     sda->other = new_sd;
     new_sd->other = sda;
-    //finish the http parsing
-    return LpxParseFinish(sda);
 }
 
 void LpxCbAccept(SD * sda)
