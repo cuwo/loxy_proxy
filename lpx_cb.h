@@ -5,6 +5,7 @@
 #include "lpx_dbg.h"
 #include "lpx_net.h"
 #include "lpx_parse.h"
+#include "lpx_parse_cb.h"
 
 //new client connected
 //we must accept it and add into epoll as HTTP
@@ -17,9 +18,6 @@ void LpxCbKill(SD * sda);
 void LpxCbWrite(SD * sda);
 
 void LpxCbRead(SD * sda);
-
-//parse HTTP request
-void LpxCbParse(SD * sda);
 
 void LpxPPKill(SD * sda, unsigned int flags);
 

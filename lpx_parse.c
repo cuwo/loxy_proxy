@@ -63,7 +63,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TGET);
         sda->http_parse_ptr = 4;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 4);
+        memcpy(sda->temp_data, sda->http_in_data, 4);
         sda->http_temp_ptr = 4;
         return 1;
     }
@@ -71,7 +71,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TPOST);
         sda->http_parse_ptr = 5;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 5);
+        memcpy(sda->temp_data, sda->http_in_data, 5);
         sda->http_temp_ptr = 5;
         return 1;
     }
@@ -79,7 +79,7 @@ int LpxParseReqType(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TCON);
         sda->http_parse_ptr = 8;
-        memcpy(temp_buf + LPX_SD_SIZE/2, sda->http_in_data, 8);
+        memcpy(sda->temp_data, sda->http_in_data, 8);
         sda->http_temp_ptr = 8;
         return 1;
     }
@@ -169,7 +169,7 @@ int LpxParseHeaders(SD * sda)
         auth = 1;
     sda->http_limit = 0;
     //copy the rest of first header
-    out_data = temp_buf + LPX_SD_SIZE/2 + sda->http_temp_ptr;
+    out_data = sda->temp_data + sda->http_temp_ptr;
     in_data = sda->http_in_data + sda->http_parse_ptr;
     do
     {
@@ -185,16 +185,12 @@ int LpxParseHeaders(SD * sda)
     {
         tc = strchr(in_data, '\r') + 2;
         temp = tc - in_data;
-        if (memcmp(in_lowercase, "content-length: ", 16) == 0)
-        {
-            sda->http_limit = atoi(in_lowercase + 16);
-        }
-        else if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
+        if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
         {
             if (LpxGlobalPassData.buf != NULL && memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0)
                 auth = 1;
         }
-        else if (memcmp(in_lowercase, "proxy", 5) == 0)
+        else if (memcmp(in_lowercase, "proxy", 5) == 0) //skip other proxy related headers
         {
             
         }
@@ -206,6 +202,11 @@ int LpxParseHeaders(SD * sda)
                 sda->host_size = temp - 8;
                 memcpy(sda->host, in_data + 6, sda->host_size);
             }
+            //save the content length
+            if (memcmp(in_lowercase, "content-length: ", 16) == 0)
+            {
+                sda->http_limit = atoi(in_lowercase + 16);
+            }
             memcpy(out_data, in_data, temp);
             out_data += temp;
         }
@@ -213,9 +214,9 @@ int LpxParseHeaders(SD * sda)
         in_lowercase += temp;
     }
     memcpy(out_data, "\r\n", 3);
-    sda->http_temp_ptr = out_data - (temp_buf + LPX_SD_SIZE/2) + 2;
+    sda->http_temp_ptr = out_data - sda->temp_data + 2;
     sda->http_parse_ptr = in_lowercase - temp_buf + 2;
-    dbgprint(("parse out: ^%s^\n", temp_buf + LPX_SD_SIZE/2));
+    dbgprint(("parse out: ^%s^\n", sda->temp_data));
     return auth;
 }
 
@@ -244,6 +245,9 @@ int LpxParseMain(SD * sda)
     result = LpxParseHeaders(sda);
     if (result <= 0)
         return result;
+    //content length allowed only on post request
+    if (!LpxSdGetFlags(sda, LPX_FLAG_TPOST) && sda->http_limit > 0)
+        return -1;
     //check for errors
     if (sda->http_in_ptr != sda->http_parse_ptr)
     {

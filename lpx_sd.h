@@ -7,6 +7,8 @@
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
+#define LPX_SD_MAX_EST 1024
+#define LPX_SD_TEMP_SIZE 8096 + LPX_SD_MAX_EST
 #define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
 #define LPX_SD_CLEAN (offsetof(SD, http_out_data))
 #define LPX_SIGNAL SIGRTMIN
@@ -75,6 +77,18 @@ typedef union SocketDescriptor
         int http_limit; //in case of POST request, for mode switch
         int http_parse_ptr;
         int http_temp_ptr;
+        //temp buffer (for parsed http request)
+        union
+        {
+            struct
+            {
+                int http_temp_ptr;
+                int http_temp_size;
+                char http_temp_data[LPX_SD_TEMP_SIZE];
+            };
+            LpxBuf http_temp_buf;
+        };
+        //input buffer (for http request)
         union
         {
             struct
