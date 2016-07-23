@@ -67,6 +67,14 @@ int LpxParseReqType(SD * sda)
         sda->http_temp_ptr = 4;
         return 1;
     }
+    if (memcmp(temp_buf, "head ", 5) == 0)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_TGET);
+        sda->http_parse_ptr = 5;
+        memcpy(sda->http_temp_data, sda->http_in_data, 5);
+        sda->http_temp_ptr = 5;
+        return 1;
+    }
     if (memcmp(temp_buf, "post ", 5) == 0)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TPOST);
