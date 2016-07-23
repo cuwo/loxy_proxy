@@ -5,12 +5,12 @@ void LpxCbKill(SD * sda)
     dbgprint(("cb kill\n"));
     if (sda->other != NULL)
     {
-//        if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
+        if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
             LpxFinWr(sda->other, NULL);
-/*        else
+        else
         {
             LpxSdClearFlag(sda->other, LPX_FLAG_CONN);
-        }*/
+        }
     }
     LpxSdDestroy(sda);
 }
