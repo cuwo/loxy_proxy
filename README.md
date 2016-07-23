@@ -4,18 +4,19 @@ simple http proxy with good performance
 the design ideas are complete
 the implementation is still in progress
 
-current progress: 70%
+current progress: 80%
 
 TODO:
 
-- epoll cycle for everything
-- password authentification
-- http CONNECT
-- http GET / POST
-- DNS name resolving via signalfd
 - timeout checking
+- make everything working
 
 DONE:
 
 - memory pool allocation
 - mainternance init
+- epoll cycle for everything
+- password authentification
+- http CONNECT
+- http GET / POST
+- DNS name resolving via signalfd
