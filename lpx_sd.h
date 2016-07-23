@@ -44,6 +44,8 @@
 #define LPX_FLAG_LOCK 2097152 //requires locking
 #define LPX_FLAG_WCON 4194304
 #define LPX_FLAG_PARSE_DEL 8388608
+#define LPX_FLAG_HUP 16777216
+#define LPX_FLAG_KAL 33554432
 //main data structure in the project
 
 typedef struct LpxBuf

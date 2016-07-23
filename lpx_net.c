@@ -19,6 +19,7 @@ int LpxNetWrite(SD * sda)
         return 1;
     }
     temp = send(sda->fd, sda->http_out_data + sda->http_out_ptr, to_write, MSG_NOSIGNAL);
+    dbgprint(("net write %d %d %d\n", sda->fd, temp, errno));
     if (temp == 0) //socket closed
         return -1;
     if (temp < 0 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) //socket busy
@@ -56,29 +57,41 @@ int LpxNetRead(SD * sda, int type)
             return -1;
         buffer = &(sda->other->http_out_buf);
         to_read = LPX_SD_HTTP_BUF_SIZE - buffer->size;
-        limit = sda->other->http_limit;
+        limit = sda->http_limit;
         if (limit >= 0)
         {
             to_read = MIN(to_read, limit);
         }
     }
     if (to_read == 0)
+    {
+        dbgprint(("buffer full %d\n", sda->fd));
         return 1; //wasn't able to read anything, socket not blocked
+    }
     temp = recv(sda->fd, buffer->data + buffer->size, to_read, MSG_NOSIGNAL);
+    dbgprint(("net read %d %d\n", sda->fd, temp));
     if (temp == 0) //socket closed
         return -1; //return error
     if (temp < 0 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) //socket busy
         return 0; //no data has been read
     if (temp < 0) //other error happened
+    {
+        dbgprint(("error: %d\n", errno));
         return -1;
+    }
     //update the limit
     if (limit > 0)
         limit -= temp;
     if (temp < to_read)
     {
         buffer->size += temp;
+        if (LpxSdGetFlag(sda, LPX_FLAG_HUP))
+        {
+            LpxSdSetFlag(sda, LPX_FLAG_DEAD);
+        }
         return 0; //socket got blocked
     }
     buffer->size += temp;
+    dbgprint(("blocked read %d\n", sda->fd));
     return 1; //socket hasn't been blocked
 }

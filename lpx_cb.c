@@ -3,6 +3,15 @@
 void LpxCbKill(SD * sda)
 {
     dbgprint(("cb kill\n"));
+    if (sda->other != NULL)
+    {
+        if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
+            LpxFinWr(sda->other, NULL);
+        else
+        {
+            LpxSdClearFlag(sda->other, LPX_FLAG_CONN);
+        }
+    }
     LpxSdDestroy(sda);
 }
 
@@ -18,7 +27,7 @@ void LpxPP(SD * sda, unsigned int flags)
 void LpxFinWr(SD * sda, LpxConstString * err)
 {
     int temp;
-    dbgprint(("fin wr\n"));
+    dbgprint(("fin wr %d\n", sda->fd));
     LpxSdSetFlag(sda, LPX_FLAG_FINWR);
     if (err != NULL)
     {
@@ -68,6 +77,8 @@ void LpxCbDns(SD * sd_dns)
             }
             else
             {
+                memcpy(&(sda->trg_adr), sda->dns_gai.ar_result->ai_addr, sizeof(struct sockaddr_in));
+                freeaddrinfo(sda->dns_gai.ar_result);
                 LpxSdSetFlag(sda, LPX_FLAG_DNS);
                 LpxCbConnect(sda);
             }
@@ -78,8 +89,10 @@ void LpxCbDns(SD * sd_dns)
 
 void LpxSayEstablish(SD * sda)
 {
+    dbgprint(("what does the fox say?\n"));
     memcpy(sda->http_out_data + sda->http_out_size, LpxEstGlobal.buf, LpxEstGlobal.len);
     sda->http_out_size += LpxEstGlobal.len;
+    LpxPP(sda, LPX_FLAG_PP_WRITE);
 }
 
 void LpxCbSuccess(SD * sda)
@@ -101,8 +114,9 @@ void LpxCbSuccess(SD * sda)
     //clear the waiting flags
     LpxSdClearFlag(sda, LPX_FLAG_WCON);
     LpxSdClearFlag(sda->other, LPX_FLAG_WAIT);
+    dbgprint(("connect success %d %d\n", sda->fd, sda->other->fd));
     //finish the http parsing
-    return LpxParseFinish(sda);
+    return LpxParseFinish(sda->other);
 }
 
 void LpxCbConnect(SD * sda)
@@ -128,13 +142,19 @@ void LpxCbConnect(SD * sda)
         dbgprint(("can't bind to IP\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);
     }
-    connect(tfd, (struct sockaddr *) & (sda->trg_adr), sizeof(struct sockaddr_in));
+    temp = connect(tfd, (struct sockaddr *) & (sda->trg_adr), sizeof(struct sockaddr_in));
+    if (temp != 0 && temp != EINPROGRESS)
+    {
+        dbgprint(("connect fail\n"));
+        return LpxFinWr(sda, &LpxErrGlobal500);
+    }
     LpxSdInit(new_sd, tfd, LPX_FLAG_OPEN | LPX_FLAG_SERVER | LPX_FLAG_WCON, 
                 sda->efd, EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP);
     new_sd->http_limit = -1;
     //link both sides
     sda->other = new_sd;
     new_sd->other = sda;
+    dbgprint(("connect to %d\n", tfd));
 }
 
 void LpxCbAccept(SD * sda)
@@ -201,6 +221,7 @@ void LpxCbRead(SD * sda)
     {
         LpxSdSetFlag(sda, LPX_FLAG_DEAD);
         LpxFinWr(sda->other, NULL);
+        dbgprint(("read fail %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_DEAD)));
         return;
     }
     if (write_result < 0) //write failed. plan the reading from that side.
@@ -215,6 +236,7 @@ void LpxCbRead(SD * sda)
     }
     if (read_result == 1) //unlock required later
     {
+        dbgprint(("-------------->LOCK %d<-------------\n", sda->fd));
         LpxSdSetFlag(sda->other, LPX_FLAG_LOCK);
     }
 }

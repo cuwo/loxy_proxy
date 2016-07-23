@@ -83,10 +83,16 @@ int main(int argc, char ** argv)
             else
             {
                 //non-connected socket closed the other side -> kill it here
-                if ((events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) && !LpxSdGetFlag(sda, LPX_FLAG_CONN))
+                if ((events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)))
                 {
-                    LpxCbKill(sda);
-                    continue;
+                    dbgprint(("hup!\n"));
+                    if(!LpxSdGetFlag(sda, LPX_FLAG_CONN | LPX_FLAG_WCON))
+                    {
+                        dbgprint(("force kill %d\n",sda->fd));
+                        LpxCbKill(sda);
+                        continue;
+                    }
+                    LpxSdSetFlag(sda, LPX_FLAG_HUP);
                 }
                 //don't do anything when socket is waiting for DNS
                 if (LpxSdGetFlag(sda, LPX_FLAG_WAIT))
@@ -96,9 +102,15 @@ int main(int argc, char ** argv)
                 //timeout control
                 LpxSdUpdateTimestampExplicit(sda, &cycle_time);
                 //data
-                if (LpxSdGetFlag(sda, LPX_FLAG_WCON) && (events[i].events & EPOLLOUT))
+                if (LpxSdGetFlag(sda, LPX_FLAG_WCON))
                 {
-                    LpxCbSuccess(sda);
+                    if (events[i].events & EPOLLOUT)
+                    {
+                        dbgprint(("success calling %d\n", sda->fd));
+                        LpxCbSuccess(sda);
+                    }
+                    else
+                        continue;
                 }
                 //we lost the other connection, process it
                 if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN))
@@ -124,6 +136,7 @@ int main(int argc, char ** argv)
                     LpxCbRead(sda);
                 }
                 //socket died, kill it
+                dbgprint(("test1: %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_DEAD)));
                 if (LpxSdGetFlag(sda, LPX_FLAG_DEAD))
                 {
                     LpxCbKill(sda);
@@ -154,9 +167,11 @@ int main(int argc, char ** argv)
             }
             if(LpxSdGetFlag(sda, LPX_FLAG_PP_READ))
             {
+                LpxSdClearFlag(sda, LPX_FLAG_PP_READ);
                 LpxCbRead(sda);
             }
-            if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL) || (LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0))
+            dbgprint(("test2: %d %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_FINWR), sda->http_out_size));
+            if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL | LPX_FLAG_DEAD) || ((LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0)) )
             {
                 LpxCbKill(sda);
             }

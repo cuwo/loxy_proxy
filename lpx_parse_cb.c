@@ -28,10 +28,13 @@ void LpxParseFinish(SD * sda)
     out_free_space = LPX_SD_HTTP_BUF_SIZE - sda->other->http_out_size;
     //we delayed the http parsing until this, so it must be true
     assert(data_to_write <= out_free_space);
-    //copy the data into output buffer
-    memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_temp_data, data_to_write);
-    sda->other->http_out_size += data_to_write;
-    sda->http_temp_ptr = 0;
+    if (!LpxSdGetFlag(sda, LPX_FLAG_TCON))
+    {
+        //copy the data into output buffer
+        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_temp_data, data_to_write);
+        sda->other->http_out_size += data_to_write;
+        sda->http_temp_ptr = 0;
+    }
     //switch the mode if required
     if (sda->http_limit > 0)
     {
@@ -44,9 +47,14 @@ void LpxParseFinish(SD * sda)
         sda->http_limit = -1;
         LpxSdClearFlag(sda, LPX_FLAG_HTTP);
     }
-    //plan the writing
-    LpxPP(sda->other, LPX_FLAG_PP_WRITE);
+    else
+    {
+        //plan the writing
+        dbgprint(("plan write %d\n", sda->other->fd));
+        LpxPP(sda->other, LPX_FLAG_PP_WRITE);
+    }
     //plan further reading/parsing
+    dbgprint(("plan read %d\n", sda->fd));
     LpxPP(sda, LPX_FLAG_PP_READ);
 }
 
@@ -133,7 +141,8 @@ void LpxCbParse(SD * sda)
     LpxParseClean(sda);
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN))
     {
-        LpxSayEstablish(sda);
+        if (LpxSdGetFlag(sda, LPX_FLAG_TCON))
+            LpxSayEstablish(sda);
         LpxParseFinish(sda); //do finish immediately
     }
     else

@@ -117,6 +117,7 @@ int LpxParseHost(SD * sda)
     }
     if (input[0] == '/') //no host address
     {
+        dbgprint(("no host address\n"));
         sda->http_parse_ptr += 1;
         return 0; //host wasn't updated
     }
@@ -129,6 +130,7 @@ int LpxParseHost(SD * sda)
     }
     if (c != '/' && !LpxSdGetFlag(sda, LPX_FLAG_TCON))
     {
+        dbgprint(("must be slash on end\n"));
         return -1; //some error happened
     }
     if (tcp != NULL && tcp < tcs) //parse connection port
@@ -143,9 +145,18 @@ int LpxParseHost(SD * sda)
     sda->http_parse_ptr = tcs - sda->http_in_data;
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN)) //already connected
     {
-        if (memcmp(input + 1, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
-            return -1;
-        return 0; //host wasn't updated
+        if (memcmp(input, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
+        {
+            dbgprint(("no host match ^%s^ ^%s^ %d %d %d\n", sda->host, input, sda->host_size, port, sda->port));
+            //return -1;
+            //disconnect it!
+            LpxSdClearFlag(sda, LPX_FLAG_CONN);
+            sda->other->other = NULL;
+            LpxPP(sda->other, LPX_FLAG_PP_KILL);
+            sda->other = NULL;
+        }
+        else
+            return 0; //host wasn't updated
     }
     sda->port = port;
     if (tcs - input > LPX_SD_HOST_SIZE) //host name overflow
@@ -179,12 +190,16 @@ int LpxParseHeaders(SD * sda)
         ++out_data;
     }
     while( c != '\n' );
+    LpxSdClearFlag(sda, LPX_FLAG_KAL);
     //parse other headers
     in_lowercase = (in_data - sda->http_in_data + temp_buf);
     while( *in_data != '\r' )
     {
         tc = strchr(in_data, '\r') + 2;
         temp = tc - in_data;
+        if (memcmp(in_lowercase, "proxy-connection: keep-alive", 28) ==0 || 
+            memcmp(in_lowercase, "connection: keep-alive", 22) == 0)
+            LpxSdSetFlag(sda, LPX_FLAG_KAL);
         if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
         {
             if (LpxGlobalPassData.buf != NULL && memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0)
