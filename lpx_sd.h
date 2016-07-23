@@ -76,7 +76,6 @@ typedef union SocketDescriptor
         char service[6]; //target port string
         int http_limit; //in case of POST request, for mode switch
         int http_parse_ptr;
-        int http_temp_ptr;
         //temp buffer (for parsed http request)
         union
         {

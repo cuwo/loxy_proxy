@@ -41,26 +41,22 @@ void LpxCbDns(SD * sda)
     LpxList * list_elem;
     dbgprint(("cb dns is called\n"));
     //read the socket to block it
-    
-    list_elem = LpxSdGlobalListPP.next;
+    return;
+    list_elem = LpxSdGlobalListDns.next;
     while(list_elem != NULL)
+    {
+        //not implemented yet
+    }
 }
 
-void LpxConnect(SD * sda)
+void LpxCbConnect(SD * sda)
 {
     dbgprint(("cb connect is called\n"));
     //perform connection 
     
     
     //finish the http parsing
-    if (sda->http_limit > 0)
-    {
-        return LpxParseFinishPass(sda);
-    }
-    else
-    {
-        return LpxParseFinishHttp(sda);
-    }
+    return LpxParseFinish(sda);
 }
 
 void LpxCbAccept(SD * sda)

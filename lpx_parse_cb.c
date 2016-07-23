@@ -1,4 +1,4 @@
-#include "lpx_parse_cb.h"
+#include "lpx_cb.h"
 
 void LpxParseClean(SD * sda)
 {
@@ -23,20 +23,20 @@ void LpxParseClean(SD * sda)
 
 void LpxParseFinish(SD * sda)
 {
-    int data_to_write, out_free_space
+    int data_to_write, out_free_space;
     data_to_write = sda->http_temp_ptr;
     out_free_space = LPX_SD_HTTP_BUF_SIZE - sda->other->http_out_size;
     //we delayed the http parsing until this, so it must be true
     assert(data_to_write <= out_free_space);
     //copy the data into output buffer
     memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_temp_data, data_to_write);
-    sda->other->http_out_size += required_data_pass;
+    sda->other->http_out_size += data_to_write;
     sda->http_temp_ptr = 0;
     //switch the mode if required
     if (sda->http_limit > 0)
     {
         dbgprint(("http mode switched\n"));
-        LpxSdFlagClear(sda, LPX_FLAG_HTTP);
+        LpxSdClearFlag(sda, LPX_FLAG_HTTP);
     }
     //plan the writing
     LpxPP(sda->other, LPX_FLAG_PP_WRITE);
@@ -48,7 +48,7 @@ void LpxParseFinishHttp(SD * sda)
 {
     //copy the parsed request to other's output
     memcpy(sda->other->http_out_data + sda->other->http_out_size,
-            sda->temp_data, sda->http_temp_ptr);
+            sda->http_temp_data, sda->http_temp_ptr);
     sda->other->http_out_size += sda->http_temp_ptr;
     assert(sda->other->http_out_size <= LPX_SD_HTTP_BUF_SIZE);
     //plan the writing
@@ -70,8 +70,8 @@ void LpxParseFinishDns(SD * sda)
     extern LpxList LpxSdGlobalListDns;
     int result;
     //try to parse host as IP
-    result = inet_pton(AF_INET, cba->host, &(sda->trg_adr.sin_addr));
-    if (temp == 1)
+    result = inet_pton(AF_INET, sda->host, &(sda->trg_adr.sin_addr));
+    if (result == 1)
     {
         return LpxCbConnect(sda);
     }
