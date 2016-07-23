@@ -23,40 +23,21 @@ void LpxParseClean(SD * sda)
 
 void LpxParseFinish(SD * sda)
 {
-    int rest_data_size, out_free_space, required_data_pass, http_req_size, size_to_skip;
-    rest_data_size = sda->http_in_size - sda->http_parse_ptr;
+    int data_to_write, out_free_space
+    data_to_write = sda->http_temp_ptr;
     out_free_space = LPX_SD_HTTP_BUF_SIZE - sda->other->http_out_size;
-    http_req_size = sda->http_temp_ptr;
-    required_data_pass = sda->http_limit;
-    size_to_skip = required_data_pass + sda->http_parse_ptr;
     //we delayed the http parsing until this, so it must be true
-    assert(http_req_size + rest_data_size <= out_free_space);
-    //copy the output request
-    memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->temp_data, http_req_size);
-    sda->other->http_out_size += http_req_size;
-    if (rest_data_size > required_data_pass) //we can process pass w/o mode switching
-    {
-        //copy the data
-        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_in_data+sda->http_parse_ptr, required_data_pass);
-        sda->other->http_out_size += required_data_pass;
-        //prepare for the next part parsing
-        memcpy(sda->http_in_data, sda->http_in_data + size_to_skip, size_to_skip);
-        sda->http_in_size -= size_to_skip;
-        assert(sda->http_in_size >= 0);
-        sda->http_limit = 0;
-    }
-    else //we have to switch the mode
-    {
-        //copy the data part
-        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_in_data+sda->http_parse_ptr, rest_data_size);
-        sda->other->http_out_size += rest_data_size;
-        sda->http_limit -= rest_data_size;
-        sda->http_in_size = 0;
-        LpxSdClearFlag(sda, LPX_FLAG_HTTP); //switch the reading mode
-    }
-    sda->http_parse_ptr = 0;
-    sda->http_in_ptr = 0;
+    assert(data_to_write <= out_free_space);
+    //copy the data into output buffer
+    memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_temp_data, data_to_write);
+    sda->other->http_out_size += required_data_pass;
     sda->http_temp_ptr = 0;
+    //switch the mode if required
+    if (sda->http_limit > 0)
+    {
+        dbgprint(("http mode switched\n"));
+        LpxSdFlagClear(sda, LPX_FLAG_HTTP);
+    }
     //plan the writing
     LpxPP(sda->other, LPX_FLAG_PP_WRITE);
     //plan further reading/parsing
@@ -165,10 +146,10 @@ void LpxCbParse(SD * sda)
     LpxParseClean(sda);
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN))
     {
-        return LpxParseFinish(sda);
+        LpxParseFinish(sda); //do finish immediately
     }
     else
     {
-        LpxParseFinishDns(sda);
+        LpxParseFinishDns(sda); //connect before finish
     }
 }
