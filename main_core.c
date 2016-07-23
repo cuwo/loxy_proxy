@@ -96,6 +96,10 @@ int main(int argc, char ** argv)
                 //timeout control
                 LpxSdUpdateTimestampExplicit(sda, &cycle_time);
                 //data
+                if (LpxSdGetFlag(sda, LPX_FLAG_WCON) && (events[i].events & EPOLLOUT))
+                {
+                    LpxCbSuccess(sda);
+                }
                 //we lost the other connection, process it
                 if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN))
                 {

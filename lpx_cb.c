@@ -61,9 +61,9 @@ void LpxCbDns(SD * sd_dns)
         temp = gai_error(&(sda->dns_gai));
         if (temp != EAI_INPROGRESS)
         {
-            LpxSdClearFlag(sda, LPX_FLAG_WAIT);
             if (sda->dns_gai.ar_result == NULL) //not resolved? say error
             {
+                LpxSdClearFlag(sda, LPX_FLAG_WAIT);
                 LpxFinWr(sda, &LpxErrGlobal503);
             }
             else
@@ -76,15 +76,63 @@ void LpxCbDns(SD * sd_dns)
     }
 }
 
+void LpxSayEstablish(SD * sda)
+{
+    memcpy(sda->http_out_data + sda->http_out_size, LpxEstGlobal.buf, LpxEstGlobal.len);
+    sda->http_out_size += LpxEstGlobal.len;
+}
+
+void LpxCbSuccess(SD * sda)
+{
+    //if no other side - kill
+    if (sda->other == NULL)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_DEAD);
+        return;
+    }
+    //make both sides finally connected
+    LpxSdSetFlag(sda, LPX_FLAG_CONN);
+    LpxSdSetFlag(sda->other, LPX_FLAG_CONN);
+    //say to the other side, it's ready
+    if (LpxSdGetFlag(sda->other, LPX_FLAG_TCON))
+    {
+        LpxSayEstablish(sda->other);
+    }
+    //clear the waiting flags
+    LpxSdClearFlag(sda, LPX_FLAG_WCON);
+    LpxSdClearFlag(sda->other, LPX_FLAG_WAIT);
+}
+
 void LpxCbConnect(SD * sda)
 {
+    SD * new_sd;
+    int temp, tfd;
+    struct sockaddr_in * adrin;
     dbgprint(("cb connect is called\n"));
     //not implemented yet
-    return;
-    //perform connection 
-    
-    //if the DNS wasn't successful, close
-    
+    tfd = socket(AF_INET, SOCK_STREAM , 0);
+    if (tfd < 0)
+    {
+        dbgprint(("can't create new socket\n"));
+        return LpxFinWr(sda, &LpxErrGlobal500);
+    }
+    new_sd = LpxSdCreate();
+    //perform connection
+    adrin = & (sda->dst_adr);
+    adrin -> sin_port = 0; //any port
+    temp = bind(tfd, (struct sockaddr*)adrin, sizeof(struct sockaddr_in));
+    if (temp != 0)
+    {
+        dbgprint(("can't bind to IP\n"));
+        return LpxFinWr(sda, &LpxErrGlobal500);
+    }
+    connect(tfd, (struct sockaddr *) & (sda->trg_adr), sizeof(struct sockaddr_in));
+    LpxSdInit(new_sd, tfd, LPX_FLAG_OPEN | LPX_FLAG_SERVER | LPX_FLAG_WCON, 
+                sda->efd, EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP);
+    new_sd->http_limit = -1;
+    //link both sides
+    sda->other = new_sd;
+    new_sd->other = sda;
     //finish the http parsing
     return LpxParseFinish(sda);
 }

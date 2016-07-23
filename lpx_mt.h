@@ -17,7 +17,9 @@ void LpxConstStringInit(LpxConstString * str, const char * in_str);
 void LpxConstStringFree(LpxConstString * str);
 
 //global error messages
+extern LpxConstString LpxEstGlobal;    //connection established
 extern LpxConstString LpxErrGlobal400; //bad request
 extern LpxConstString LpxErrGlobal407; //auth required
+extern LpxConstString LpxErrGlobal500; //internal error
 extern LpxConstString LpxErrGlobal503; //service unavailable
 extern LpxConstString LpxErrGlobal504; //gateway timeout

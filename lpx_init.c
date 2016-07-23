@@ -14,6 +14,7 @@ char * LpxErrorPrepare(const char * err, const char * text, const char * additio
 
 void LpxErrorInit()
 {
+    LpxConstStringInit(&LpxEstGlobal, "HTTP/1.1 200 Connection established\r\nLoxy-Proxy v4\r\n\r\n");
     LpxConstStringInit(&LpxErrGlobal400, LpxErrorPrepare("400 Bad Request", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>400 Bad Request</title>\n</head><body>\n<h1>Bad Request</h1>"
     "<p>Loxy-Proxy has failed to parse the HTTP request. Probably there is something wrong.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
@@ -21,7 +22,11 @@ void LpxErrorInit()
     LpxConstStringInit(&LpxErrGlobal407, LpxErrorPrepare("407 Proxy Authentication Required", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>407 Proxy Authentication Required</title>\n</head><body>\n<h1>Authentication Required</h1>"
     "<p>Loxy-Proxy requires authentification to process your request. Please, enter your credentials.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
-    "Proxy-Authenticate: Basic realm=\"Loxy-Proxy v4\"\r\n"));    
+    "Proxy-Authenticate: Basic realm=\"Loxy-Proxy v4\"\r\n")); 
+    LpxConstStringInit(&LpxErrGlobal503, LpxErrorPrepare("500 Internal Server Error", 
+    "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>Server Error</h1>"
+    "<p>Something really wrong happened. Contact the proxy owner.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
+    ""));    
     LpxConstStringInit(&LpxErrGlobal503, LpxErrorPrepare("503 Service Unavailable", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>503 Service Unavailable</title>\n</head><body>\n<h1>Service Unavailable</h1>"
     "<p>Loxy-Proxy has failed to find the requested domain. Probably you made the mistake in the address part.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",

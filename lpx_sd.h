@@ -7,9 +7,9 @@
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
-#define LPX_SD_MAX_EST 1024
-#define LPX_SD_TEMP_SIZE 8096 + LPX_SD_MAX_EST
-#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
+#define LPX_SD_MAX_EST 256
+#define LPX_SD_TEMP_SIZE 8096
+#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data) - LPX_SD_MAX_EST)
 #define LPX_SD_CLEAN (offsetof(SD, http_out_data))
 #define LPX_SIGNAL SIGRTMIN
 
@@ -42,7 +42,7 @@
 #define LPX_FLAG_PP_ALL (LPX_FLAG_PP | LPX_FLAG_PP_KILL | LPX_FLAG_PP_WRITE | LPX_FLAG_PP_READ | LPX_FLAG_PP_HTTP)
 #define LPX_FLAG_AUTH 1048576 //authentificated
 #define LPX_FLAG_LOCK 2097152 //requires locking
-#define LPX_FLAG_PP_HTTP 4194304
+#define LPX_FLAG_WCON 4194304
 #define LPX_FLAG_PARSE_DEL 8388608
 //main data structure in the project
 

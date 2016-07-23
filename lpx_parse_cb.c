@@ -38,6 +38,12 @@ void LpxParseFinish(SD * sda)
         dbgprint(("http mode switched\n"));
         LpxSdClearFlag(sda, LPX_FLAG_HTTP);
     }
+    if (LpxSdGetFlag(sda, LPX_FLAG_TCON))
+    {
+        dbgprint(("connect mode enabled\n"));
+        sda->http_limit = -1;
+        LpxSdClearFlag(sda, LPX_FLAG_HTTP);
+    }
     //plan the writing
     LpxPP(sda->other, LPX_FLAG_PP_WRITE);
     //plan further reading/parsing
@@ -127,6 +133,7 @@ void LpxCbParse(SD * sda)
     LpxParseClean(sda);
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN))
     {
+        LpxSayEstablish(sda);
         LpxParseFinish(sda); //do finish immediately
     }
     else
