@@ -142,8 +142,9 @@ void LpxCbConnect(SD * sda)
         dbgprint(("can't bind to IP\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);
     }
+    LpxNetMakeNonbl(tfd);
     temp = connect(tfd, (struct sockaddr *) & (sda->trg_adr), sizeof(struct sockaddr_in));
-    if (temp != 0 && temp != EINPROGRESS)
+    if (temp != 0 && errno != EINPROGRESS)
     {
         dbgprint(("connect fail\n"));
         return LpxFinWr(sda, &LpxErrGlobal500);

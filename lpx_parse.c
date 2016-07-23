@@ -197,8 +197,7 @@ int LpxParseHeaders(SD * sda)
     {
         tc = strchr(in_data, '\r') + 2;
         temp = tc - in_data;
-        if (memcmp(in_lowercase, "proxy-connection: keep-alive", 28) ==0 || 
-            memcmp(in_lowercase, "connection: keep-alive", 22) == 0)
+        if (memcmp(in_lowercase, "proxy-connection: keep-alive", 28) ==0) 
             LpxSdSetFlag(sda, LPX_FLAG_KAL);
         if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
         {
