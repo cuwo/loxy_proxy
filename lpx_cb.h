@@ -36,4 +36,4 @@ void LpxCbConnect(SD * sda);
 
 void LpxCbSuccess(SD * sda);
 
-void LpxSayEstablish(SD * sda)
+void LpxSayEstablish(SD * sda);
