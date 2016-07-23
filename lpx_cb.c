@@ -5,12 +5,12 @@ void LpxCbKill(SD * sda)
     dbgprint(("cb kill\n"));
     if (sda->other != NULL)
     {
-        if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
+//        if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
             LpxFinWr(sda->other, NULL);
-        else
+/*        else
         {
             LpxSdClearFlag(sda->other, LPX_FLAG_CONN);
-        }
+        }*/
     }
     LpxSdDestroy(sda);
 }
@@ -50,7 +50,7 @@ void LpxCbDns(SD * sd_dns)
     struct signalfd_siginfo fdsi;
     int temp;
     SD * sda;
-    LpxList * list_elem;
+    LpxList * list_elem, * list_next;
     dbgprint(("cb dns is called\n"));
     //read the socket to block it
     do
@@ -64,12 +64,12 @@ void LpxCbDns(SD * sd_dns)
     {
         sda = LPX_SD_FROM_DNS_LIST(list_elem);
         //get next elem
-        LpxListRemove(list_elem);
-        list_elem = LpxSdGlobalListDns.next;
+        list_next = list_elem->next;
         //check if the request is done
         temp = gai_error(&(sda->dns_gai));
         if (temp != EAI_INPROGRESS)
         {
+            LpxListRemove(list_elem);
             if (sda->dns_gai.ar_result == NULL) //not resolved? say error
             {
                 LpxSdClearFlag(sda, LPX_FLAG_WAIT);
@@ -83,7 +83,7 @@ void LpxCbDns(SD * sd_dns)
                 LpxCbConnect(sda);
             }
         }
-        
+        list_elem = list_next;
     }
 }
 

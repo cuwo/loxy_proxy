@@ -76,10 +76,11 @@ void LpxParseFinishDns(SD * sda)
     gaiptr->ar_service = sda->service;
     gaiptr->ar_request = NULL;
     gaiptr->ar_result = NULL;
-    getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->dns_sev));
+    result = getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->dns_sev));
     LpxSdSetFlag(sda, LPX_FLAG_WAIT);
+    assert(sda->dns_list.prev == NULL && sda->dns_list.next == NULL);
     LpxListAddTail(&LpxSdGlobalListDns, &(sda->dns_list));
-    dbgprint(("dns finish called\n"));
+    dbgprint(("dns finish called %d\n", result));
     //don't do anything to http parsed data, process it later
 }
 

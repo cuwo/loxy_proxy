@@ -60,6 +60,7 @@ int main(int argc, char ** argv)
         //get current time
         //it's better to use the one call for all events occured
         gettimeofday(&cycle_time, NULL);
+        dbgprint(("%x begin cycle\n", cycle_time.tv_sec * 1000 + cycle_time.tv_usec/1000));
         for (i = 0; i < n; ++i)
         {
             sda = (SD*)(events[i].data.ptr);
@@ -85,7 +86,7 @@ int main(int argc, char ** argv)
                 //non-connected socket closed the other side -> kill it here
                 if ((events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)))
                 {
-                    dbgprint(("hup!\n"));
+                    dbgprint(("hup! %d\n", sda->fd));
                     if(!LpxSdGetFlag(sda, LPX_FLAG_CONN | LPX_FLAG_WCON))
                     {
                         dbgprint(("force kill %d\n",sda->fd));
@@ -136,7 +137,6 @@ int main(int argc, char ** argv)
                     LpxCbRead(sda);
                 }
                 //socket died, kill it
-                dbgprint(("test1: %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_DEAD)));
                 if (LpxSdGetFlag(sda, LPX_FLAG_DEAD))
                 {
                     LpxCbKill(sda);
@@ -144,7 +144,7 @@ int main(int argc, char ** argv)
                 }
             }
         }
-        
+        dbgprint(("end cycle\n"));
         //perform PP
         list_elem = LpxSdGlobalListPP.next;
         while(list_elem != NULL)
