@@ -2,11 +2,13 @@
 
 void LpxCbKill(SD * sda)
 {
-    dbgprint(("cb kill\n"));
+    dbgprint(("cb kill %d %X\n", sda->fd, sda->flags));
     if (sda->other != NULL)
     {
         if (LpxSdGetFlag(sda->other, LPX_FLAG_SERVER) || !LpxSdGetFlags(sda->other, LPX_FLAG_HTTP | LPX_FLAG_KAL))
+        {
             LpxFinWr(sda->other, NULL);
+        }
         else
         {
             LpxSdClearFlag(sda->other, LPX_FLAG_CONN);
@@ -221,7 +223,6 @@ void LpxCbRead(SD * sda)
     if (read_result < 0) //read failed. close this side and finish the other.
     {
         LpxSdSetFlag(sda, LPX_FLAG_DEAD);
-        LpxFinWr(sda->other, NULL);
         dbgprint(("read fail %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_DEAD)));
         return;
     }

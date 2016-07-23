@@ -206,7 +206,10 @@ int LpxParseHeaders(SD * sda)
         tc = strchr(in_data, '\r') + 2;
         temp = tc - in_data;
         if (memcmp(in_lowercase, "proxy-connection: keep-alive", 28) ==0) 
+        {
             LpxSdSetFlag(sda, LPX_FLAG_KAL);
+            dbgprint(("KAL is set\n"));
+        }
         if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
         {
             if (LpxGlobalPassData.buf != NULL && memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0)
@@ -224,8 +227,11 @@ int LpxParseHeaders(SD * sda)
                 sda->host_size = temp - 8;
                 memcpy(sda->host, in_data + 6, sda->host_size);
             }
-            if (memcmp(in_lowercase, "connection: keep-alive", 26) ==0) 
+            if (memcmp(in_lowercase, "connection: keep-alive", 22) ==0)
+            {
+                dbgprint(("KAL is set\n"));
                 LpxSdSetFlag(sda, LPX_FLAG_KAL);
+            }
             //save the content length
             if (memcmp(in_lowercase, "content-length: ", 16) == 0)
             {
