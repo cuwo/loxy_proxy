@@ -216,7 +216,7 @@ void LpxCbRead(SD * sda)
         read_result = LpxNetRead(sda, 1); //read from current socket
         write_result = LpxNetWrite(sda->other); //write to the other one
     }
-    while(read_result == 1 && write_result == 1); //pass the traffic until block or fail
+    while(read_result == 1 && write_result == 1 && sda->http_limit != 0); //pass the traffic until block or fail
     
     if (read_result < 0) //read failed. close this side and finish the other.
     {
