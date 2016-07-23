@@ -102,7 +102,7 @@ void LpxParseFinishPass(SD * sda)
     if (rest_data_size > required_data_pass) //we can process pass w/o mode switching
     {
         //copy the data
-        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_parse_ptr, required_data_pass);
+        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_in_data+sda->http_parse_ptr, required_data_pass);
         sda->other->http_out_size += required_data_pass;
         //prepare for the next part parsing
         memcpy(sda->http_in_data, sda->http_in_data + size_to_skip, size_to_skip);
@@ -113,11 +113,11 @@ void LpxParseFinishPass(SD * sda)
     else //we have to switch the mode
     {
         //copy the data part
-        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_parse_ptr, rest_data_size);
+        memcpy(sda->other->http_out_data + sda->other->http_out_size, sda->http_in_data+sda->http_parse_ptr, rest_data_size);
         sda->other->http_out_size += rest_data_size;
         sda->http_limit -= rest_data_size;
         sda->http_in_size = 0;
-        LpxSdClearFlag(LPX_FLAG_HTTP); //switch the reading mode
+        LpxSdClearFlag(sda, LPX_FLAG_HTTP); //switch the reading mode
     }
     sda->http_parse_ptr = 0;
     sda->http_in_ptr = 0;
@@ -153,9 +153,13 @@ void LpxParseFinishDns(SD * sda)
     struct gaicb * gaiptr;
     extern LpxList LpxSdGlobalListDns;
     gaiptr = &(sda->dns_gai);
-    getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->host));
+    gaiptr->ar_name = sda->host;
+    gaiptr->ar_service = sda->service;
+    gaiptr->ar_request = NULL;
+    gaiptr->ar_result = NULL;
+    getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->dns_sev));
     LpxSdSetFlag(sda, LPX_FLAG_WAIT);
-    LpxListAddTail(&LpxSdGlobalListDns, &(sda->service));
+    LpxListAddTail(&LpxSdGlobalListDns, &(sda->dns_list));
     dbgprint(("dns finish called\n"));
     //don't do anything to http parsed data, process it later
 }
@@ -224,7 +228,7 @@ void LpxCbParse(SD * sda)
     }
     else
     {
-        LpxParseFinishDns(SD * sda);
+        LpxParseFinishDns(sda);
     }
 }
 

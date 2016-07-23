@@ -9,6 +9,7 @@
 #define LPX_SD_IN_SIZE 8096
 #define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
 #define LPX_SD_CLEAN (offsetof(SD, http_out_data))
+#define LPX_SIGNAL SIGRTMIN
 
 #define LPX_SD_FROM_OFFSET(ptr, offset) ((SD*)( ((char*)(ptr)) - offset ))
 #define LPX_SD_FROM_MAIN_LIST(ptr) LPX_SD_FROM_OFFSET(ptr, offsetof(SD, sd_list))

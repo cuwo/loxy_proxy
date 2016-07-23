@@ -29,6 +29,9 @@ void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned 
     event.data.ptr = sda;
     event.events = epoll_flags;
     epoll_ctl (epoll_fd, EPOLL_CTL_ADD, socket, &event);
+    sda->dns_sev.sigev_notify = SIGEV_SIGNAL;
+    sda->dns_sev.sigev_signo = LPX_SIGNAL;
+    sda->dns_sev.sigev_value.sival_ptr = sda;
 }
 
 void LpxSdClose(SD * sda)

@@ -7,7 +7,6 @@
 #define LPX_MAX_LISTEN 16
 #define LPX_TIMER_PERIOD 5
 #define LPX_MAX_EVENTS 32
-#define LPX_SIGNAL SIGRTMIN
 
 //start listening for incoming connections
 int LpxListenCompleteInit(int listen_port, int epoll_fd);
