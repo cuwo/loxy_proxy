@@ -216,6 +216,8 @@ int LpxParseHeaders(SD * sda)
                 sda->host_size = temp - 8;
                 memcpy(sda->host, in_data + 6, sda->host_size);
             }
+            if (memcmp(in_lowercase, "connection: keep-alive", 26) ==0) 
+                LpxSdSetFlag(sda, LPX_FLAG_KAL);
             //save the content length
             if (memcmp(in_lowercase, "content-length: ", 16) == 0)
             {
