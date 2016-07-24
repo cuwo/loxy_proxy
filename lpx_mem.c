@@ -6,6 +6,9 @@ int LpxMemGlobalPoolInit = 0;
 //size of each pool's data block
 int LpxMemGlobalPoolBlockSize;
 
+//memory saving
+int LpxMemGlobalFreeMode = 0;
+
 //list of empty blocks for allocation
 LpxList LpxMemGlobalPoolFreeList;
 
@@ -132,6 +135,10 @@ void * LpxMemPoolAlloc()
 void LpxMemPoolFree(void * adr)
 {
     LpxList * list;
+    if (LpxMemGlobalFreeMode == 0)
+    {
+        return LpxMemPoolTrueFree(adr);
+    }
     if (adr == NULL)
         return;
     assert(LpxMemPoolCheckOverflow(adr) == 0);
