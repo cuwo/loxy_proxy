@@ -13,7 +13,6 @@ void LpxCbTimer(SD * sda_tio)
     list_elem = LpxSdGlobalListMain.next;
     while (list_elem != NULL)
     {
-        dbgprint(("timer cycle\n"));
         sda = LPX_SD_FROM_MAIN_LIST(list_elem);
         list_elem = list_elem->next;
         if (LpxSdGetFlag(sda, LPX_FLAG_MAINT))
