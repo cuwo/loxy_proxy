@@ -18,9 +18,9 @@ int main(int argc, char ** argv)
     LpxList * list_elem;
     int listen_port, epoll_fd, i, n, temp;
     extern LpxList LpxSdGlobalListPP;
-    dbgprint(("debug mode enabled!\n"));
     //parse arguments
     LpxArgsParse(argc, argv, &listen_port);
+    dbgprint(("debug mode enabled!\n"));
     //init memory pool and alloc temp buffer
     LpxMemPoolInit(LPX_SD_SIZE);
     temp_buf = LpxMemPoolAlloc();

@@ -2,10 +2,8 @@
 #pragma once
 #include "includes.h"
 
-#ifdef DEBUG
-#define dbgprint(a) printf a
-#else
-#define dbgprint(a) 
-#endif
+extern int dbg_mode;
+
+#define dbgprint(a) {if (dbg_mode) printf a;}
 
 void dbghex(void * data, int size);

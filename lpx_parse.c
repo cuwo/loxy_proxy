@@ -136,11 +136,11 @@ int LpxParseHost(SD * sda)
             tcp = tcs;
         ++tcs;
     }
-    if (c != '/' && !LpxSdGetFlag(sda, LPX_FLAG_TCON))
+    /*(if (c != '/' && !LpxSdGetFlag(sda, LPX_FLAG_TCON))
     {
         dbgprint(("must be slash on end\n"));
         return -1; //some error happened
-    }
+    }*/
     if (tcp != NULL && tcp < tcs) //parse connection port
     {
         host_end = tcp;
@@ -151,9 +151,10 @@ int LpxParseHost(SD * sda)
     else
         host_end = tcs;
     sda->http_parse_ptr = tcs - sda->http_in_data;
+    temp = host_end - input;
     if (LpxSdGetFlag(sda, LPX_FLAG_CONN)) //already connected
     {
-        if (memcmp(input, sda->host, sda->host_size) != 0 || port != sda->port) //the host or port is different
+        if (memcmp(input, sda->host, sda->host_size) != 0 || sda->host_size != temp || port != sda->port) //the host or port is different
         {
             dbgprint(("no host match ^%s^ ^%s^ %d %d %d\n", sda->host, input, sda->host_size, port, sda->port));
             //return -1;
@@ -171,7 +172,7 @@ int LpxParseHost(SD * sda)
         return -1;
     else //copy host data
     {
-        sda->host_size = temp = host_end - input;
+        sda->host_size = temp;
         memcpy(sda->host, input, temp);
         sda->host[temp] = 0;
         dbgprint(("host parse: port %d host ^%s^\n", sda->port, sda->host));

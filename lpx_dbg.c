@@ -1,9 +1,10 @@
 #include "lpx_dbg.h"
 
+int dbg_mode=0;
+
 //snippet by epatel
 void dbghex(void * data, int size)
 {
-#ifdef DEBUG
     unsigned char *buf = (unsigned char*)data;
     int i, j;
     for (i=0; i<size; i+=16) 
@@ -20,5 +21,4 @@ void dbghex(void * data, int size)
                 printf("%c", isprint(buf[i+j]) ? buf[i+j] : '.');
         printf("\n");
     }
-#endif
 }

@@ -2,6 +2,7 @@
 void LpxArgsParse(int argc, char ** argv, int * lport)
 {
     int temp, len1, len2, i;
+    extern int dbg_mode;
     char * username = NULL;
     char * password = NULL;
     char * auth_string = NULL;
@@ -11,11 +12,17 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
     {
         printf("Loxy-Proxy V4 by Custom World\navailable arguments:\n\t-l = listening port (8080 by default)\n\t-u = username for auth\n\t-p = password for auth\n");
     }
-    for (i = 1; i < argc-1; i++)
+    for (i = 1; i < argc; i++)
     {
+        //options w/o params
+        if(strcmp(argv[i], "-d") == 0)
+            dbg_mode = 1;
+        if (i == argc - 2)
+            break;
+        //options with params
         if(strcmp(argv[i], "-l") == 0)
         {
-            temp = atoi(argv[i+1]);
+            temp = atoi(argv[++i]);
             if (temp > 0 && temp < 65536)
             {
                 * lport = temp;
@@ -24,7 +31,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
         }
         if(strcmp(argv[i], "-u") == 0)
         {
-            len1 = strlen(argv[i+1]);
+            len1 = strlen(argv[++i]);
             if (len1 > 0)
             {
                 username = (char*)LpxMemSafeAlloc(len1+1);
@@ -37,7 +44,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
         }
         if(strcmp(argv[i], "-p") == 0)
         {
-            len2 = strlen(argv[i+1]);
+            len2 = strlen(argv[++i]);
             if (len2 > 0)
             {
                 password = (char*)LpxMemSafeAlloc(len2+1);
@@ -49,6 +56,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
             }
         }
     }
+
     if (password != NULL && username != NULL)
     {
         temp = len1 + len2 + 1;
