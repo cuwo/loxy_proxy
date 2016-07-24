@@ -4,6 +4,9 @@
 #include "lpx_mem.h"
 #include "lpx_dbg.h"
 
+#define LPX_TIMEOUT 40000
+#define LPX_WAIT_TIMEOUT 10000
+
 #define LPX_SD_SIZE 65536
 #define LPX_SD_HOST_SIZE 1024
 #define LPX_SD_IN_SIZE 8096
@@ -140,3 +143,5 @@ void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned 
 int LpxSdUpdateTimestamp(SD * sda);
 
 int LpxSdUpdateTimestampExplicit(SD * sda, struct timeval * tv);
+
+int LpxSdGetTimeout(SD * sda, SD * ref);

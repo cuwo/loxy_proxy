@@ -1,5 +1,37 @@
 #include "lpx_cb.h"
 
+void LpxCbTimer(SD * sda_tio)
+{
+    extern LpxList LpxSdGlobalListMain;
+    LpxList * list_elem;
+    SD * sda;
+    int tio;
+    dbgprint(("cb timer!\n"));
+    //read the timer to block it back
+    read(sda_tio->fd, temp_buf, LPX_SD_SIZE);
+    //check all the SDs for timeout
+    list_elem = LpxSdGlobalListMain.next;
+    while (list_elem != NULL)
+    {
+        dbgprint(("timer cycle\n"));
+        sda = LPX_SD_FROM_MAIN_LIST(list_elem);
+        list_elem = list_elem->next;
+        if (LpxSdGetFlag(sda, LPX_FLAG_MAINT))
+        {
+            continue; //don't kill mainternance SDs
+        }
+        tio = LpxSdGetTimeout(sda, sda_tio);
+        if (tio > LPX_WAIT_TIMEOUT && LpxSdGetFlag(sda, LPX_FLAG_WAIT))
+        {
+            LpxFinWr(sda, &LpxErrGlobal504);
+        }
+        else if (tio > LPX_TIMEOUT)
+        {
+            LpxPP(sda, LPX_FLAG_PP_KILL);
+        }
+    }
+}
+
 void LpxCbKill(SD * sda)
 {
     dbgprint(("cb kill %d %X\n", sda->fd, sda->flags));

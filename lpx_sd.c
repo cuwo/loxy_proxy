@@ -14,6 +14,7 @@ SD * LpxSdCreate()
     new_sd = (SD*)LpxMemPoolAlloc();
     if (new_sd == NULL)
         return NULL;
+    memset(new_sd, 0, LPX_SD_CLEAN); //clear everything except buffers
     LpxListAddTail(&LpxSdGlobalListMain, &(new_sd->sd_list));
     LpxSdUpdateTimestamp(new_sd);
     return new_sd;
@@ -22,7 +23,6 @@ SD * LpxSdCreate()
 void LpxSdInit(SD * sda, int socket, unsigned int flags, int epoll_fd, unsigned int epoll_flags)
 {
     struct epoll_event event;
-    memset(sda, 0, LPX_SD_CLEAN); //clear everything except buffers
     sda->fd = socket;
     sda->efd = epoll_fd;
     sda->flags = flags;
@@ -78,12 +78,20 @@ int LpxSdUpdateTimestamp(SD * sda)
         (sda->ts.tv_usec - last_ts.tv_usec)/1000.0 + 0.5;
 }
 
+int LpxSdGetTimeout(SD * sda, SD * ref)
+{
+    struct timeval ref_ts = ref->ts;
+    return (ref_ts.tv_sec - sda->ts.tv_sec)*1000.0 + 
+        (ref_ts.tv_usec - sda->ts.tv_usec)/1000.0 + 0.5;
+}
+
 int LpxSdUpdateTimestampExplicit(SD * sda, struct timeval * tv)
 {
     struct timeval last_ts = sda->ts;
     sda->ts = *tv;
-    return (sda->ts.tv_sec - last_ts.tv_sec)*1000.0 + 
-        (sda->ts.tv_usec - last_ts.tv_usec)/1000.0 + 0.5;
+    if (sda->other != NULL)
+        sda->other->ts = *tv;
+    return 0;
 }
 
 inline void LpxSdSetFlag(SD * sda, unsigned int flag)

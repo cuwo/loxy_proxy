@@ -37,3 +37,7 @@ void LpxCbConnect(SD * sda);
 void LpxCbSuccess(SD * sda);
 
 void LpxSayEstablish(SD * sda);
+
+void LpxCbTimer(SD * sda);
+
+void LpxPP(SD * sda, unsigned int flags);

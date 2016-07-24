@@ -60,7 +60,6 @@ int main(int argc, char ** argv)
         //get current time
         //it's better to use the one call for all events occured
         gettimeofday(&cycle_time, NULL);
-        dbgprint(("%x begin cycle\n", cycle_time.tv_sec * 1000 + cycle_time.tv_usec/1000));
         for (i = 0; i < n; ++i)
         {
             sda = (SD*)(events[i].data.ptr);
@@ -74,7 +73,8 @@ int main(int argc, char ** argv)
                 }
                 else if (LpxSdGetFlag(sda, LPX_FLAG_TIMER)) //periodic timer, check all connected clients
                 {
-                
+                    LpxSdUpdateTimestampExplicit(sda, &cycle_time);
+                    LpxCbTimer(sda);
                 }
                 else //DNS processing
                 {
@@ -144,7 +144,6 @@ int main(int argc, char ** argv)
                 }
             }
         }
-        dbgprint(("end cycle\n"));
         //perform PP
         list_elem = LpxSdGlobalListPP.next;
         while(list_elem != NULL)
@@ -154,6 +153,8 @@ int main(int argc, char ** argv)
             //prepare next list element
             LpxListRemove(list_elem);
             list_elem = LpxSdGlobalListPP.next;
+            //update the timeout
+            LpxSdUpdateTimestampExplicit(sda, &cycle_time);
             //do callbacks depending on PP task
             if(LpxSdGetFlag(sda, LPX_FLAG_PP_KILL))
             {
@@ -170,7 +171,6 @@ int main(int argc, char ** argv)
                 LpxSdClearFlag(sda, LPX_FLAG_PP_READ);
                 LpxCbRead(sda);
             }
-            dbgprint(("test2: %d %d %d\n", sda->fd, LpxSdGetFlag(sda, LPX_FLAG_FINWR), sda->http_out_size));
             if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL | LPX_FLAG_DEAD) || ((LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0)) )
             {
                 LpxCbKill(sda);
