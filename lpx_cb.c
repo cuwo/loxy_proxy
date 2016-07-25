@@ -60,6 +60,8 @@ void LpxPP(SD * sda, unsigned int flags)
 void LpxFinWr(SD * sda, LpxConstString * err)
 {
     int temp;
+    if (sda == NULL)
+        return;
     dbgprint(("fin wr %d\n", sda->fd));
     LpxSdSetFlag(sda, LPX_FLAG_FINWR);
     if (err != NULL)
@@ -223,14 +225,11 @@ void LpxCbWrite(SD * sda)
     int res;
     extern LpxList LpxSdGlobalListPP;
     dbgprint(("cb write\n"));
-    SD * other;
     res = LpxNetWrite(sda);
     if (res > 0 && LpxSdGetFlag(sda, LPX_FLAG_LOCK)) //unlock required
     {
         //post-process the opposite side for reading
-        other = sda->other;
-        assert(other != NULL);
-        LpxPP(other, LPX_FLAG_PP_READ);
+        LpxPP(sda->other, LPX_FLAG_PP_READ);
         LpxSdClearFlag(sda, LPX_FLAG_LOCK);
     }
     else if (res < 0)
