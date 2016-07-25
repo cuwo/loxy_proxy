@@ -83,6 +83,14 @@ int LpxParseReqType(SD * sda)
         sda->http_temp_ptr = 5;
         return 1;
     }
+    if (memcmp(temp_buf, "options ", 8) == 0)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_TPOST);
+        sda->http_parse_ptr = 8;
+        memcpy(sda->http_temp_data, sda->http_in_data, 8);
+        sda->http_temp_ptr = 8;
+        return 1;
+    }
     if (memcmp(temp_buf, "connect ", 8) == 0)
     {
         LpxSdSetFlag(sda, LPX_FLAG_TCON);
