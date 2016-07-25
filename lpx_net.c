@@ -81,7 +81,7 @@ int LpxNetRead(SD * sda, int type)
     }
     //update the limit
     if (limit > 0)
-        limit -= temp;
+        sda->http_limit -= temp;
     if (temp < to_read)
     {
         buffer->size += temp;

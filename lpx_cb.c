@@ -131,9 +131,9 @@ void LpxSayEstablish(SD * sda)
 void LpxCbSuccess(SD * sda)
 {
     //if no other side - kill
-    if (sda->other == NULL)
+    if (sda->other == NULL || LpxSdGetFlag(sda->other, LPX_FLAG_DEAD | LPX_FLAG_HUP))
     {
-        LpxSdSetFlag(sda, LPX_FLAG_DEAD);
+        LpxFinWr(sda, &LpxErrGlobal503);
         return;
     }
     //make both sides finally connected
@@ -246,6 +246,11 @@ void LpxCbRead(SD * sda)
     if (LpxSdGetFlag(sda, LPX_FLAG_HTTP))
         return LpxCbParse(sda);
     dbgprint(("cb read\n"));
+    if (sda->other == NULL)
+    {
+        LpxSdSetFlag(sda, LPX_FLAG_DEAD);
+        return;
+    }
     do
     {
         read_result = LpxNetRead(sda, 1); //read from current socket

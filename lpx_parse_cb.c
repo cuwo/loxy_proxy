@@ -64,9 +64,12 @@ void LpxParseFinishDns(SD * sda)
     extern LpxList LpxSdGlobalListDns;
     int result;
     //try to parse host as IP
+    sda->trg_adr = sda->dst_adr;
     result = inet_pton(AF_INET, sda->host, &(sda->trg_adr.sin_addr));
     if (result == 1)
     {
+        sda->trg_adr.sin_port = htons(sda->port);
+        dbgprint(("pton done: %d %s\n",sda->port, inet_ntoa(sda->trg_adr.sin_addr)));
         LpxSdSetFlag(sda, LPX_FLAG_DNS);
         return LpxCbConnect(sda);
     }
