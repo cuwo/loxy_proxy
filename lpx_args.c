@@ -26,7 +26,7 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
             LpxMemGlobalFreeMode = 1;
         if(strcmp(argv[i], "-d") == 0)
             dbg_mode = 1;
-        if (i == argc - 2)
+        if (i == argc - 1)
             break;
         //options with params
         if(strcmp(argv[i], "-l") == 0)
