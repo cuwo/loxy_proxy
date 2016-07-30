@@ -23,7 +23,7 @@ void LpxErrorInit()
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>407 Proxy Authentication Required</title>\n</head><body>\n<h1>Authentication Required</h1>"
     "<p>Loxy-Proxy requires authentification to process your request. Please, enter your credentials.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
     "\r\nProxy-Authenticate: Basic realm=\"Loxy-Proxy v4\"")); 
-    LpxConstStringInit(&LpxErrGlobal503, LpxErrorPrepare("500 Internal Server Error", 
+    LpxConstStringInit(&LpxErrGlobal500, LpxErrorPrepare("500 Internal Server Error", 
     "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>Server Error</h1>"
     "<p>Something really wrong happened. Contact the proxy owner.</p>\n<hr>\n<address>Loxy-Proxy v4</address>\n</body></html>\n",
     ""));    
