@@ -52,6 +52,9 @@ void LpxCbKill(SD * sda)
         else
             LpxSdSetFlag(sda, LPX_FLAG_DK);
     }
+    else
+        LpxSdDestroy(sda);
+
 }
 
 void LpxPP(SD * sda, unsigned int flags)
