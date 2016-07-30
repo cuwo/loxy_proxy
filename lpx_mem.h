@@ -5,7 +5,7 @@
 
 //when Empty/Alloc > alloc_ratio, memfree happens
 //code must leave at least Alloc*free_ratio blocks
-#define LPX_POOL_ALLOC_RATIO 4
+#define LPX_POOL_ALLOC_RATIO 2
 #define LPX_POOL_FREE_RATIO 2
 
 #define LPX_ALLOC_SIGN1 0xDEADC0BA
