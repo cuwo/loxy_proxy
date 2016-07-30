@@ -45,7 +45,13 @@ void LpxCbKill(SD * sda)
             LpxSdClearFlag(sda->other, LPX_FLAG_CONN);
         }
     }
-    LpxSdDestroy(sda);
+    if (sda->dns_list.prev != NULL) //dns in progress
+    {
+        if (gai_cancel(&(sda->dns_gai)) == EAI_CANCELED)
+            LpxSdDestroy(sda);
+        else
+            LpxSdSetFlag(sda, LPX_FLAG_DK);
+    }
 }
 
 void LpxPP(SD * sda, unsigned int flags)
@@ -124,6 +130,7 @@ void LpxCbDns(SD * sd_dns)
 
 void LpxSayEstablish(SD * sda)
 {
+    assert(LPX_SD_HTTP_BUF_SIZE - sda->http_out_size >= LpxEstGlobal.len);
     dbgprint(("what does the fox say?\n"));
     memcpy(sda->http_out_data + sda->http_out_size, LpxEstGlobal.buf, LpxEstGlobal.len);
     sda->http_out_size += LpxEstGlobal.len;
@@ -160,7 +167,8 @@ void LpxCbConnect(SD * sda)
     int temp, tfd;
     struct sockaddr_in * adrin;
     dbgprint(("cb connect is called\n"));
-    //not implemented yet
+    if (LpxSdGetFlag(sda, LPX_FLAG_DK))
+        return LpxCbKill(sda);
     tfd = socket(AF_INET, SOCK_STREAM , 0);
     if (tfd < 0)
     {

@@ -7,12 +7,11 @@
 #define LPX_TIMEOUT 40000
 #define LPX_WAIT_TIMEOUT 10000
 
-#define LPX_SD_SIZE 65536
+#define LPX_SD_SIZE 32768
 #define LPX_SD_HOST_SIZE 1024
-#define LPX_SD_IN_SIZE 8096
-#define LPX_SD_MAX_EST 256
-#define LPX_SD_TEMP_SIZE 8096
-#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data) - LPX_SD_MAX_EST)
+#define LPX_SD_IN_SIZE 6144
+#define LPX_SD_TEMP_SIZE 6144
+#define LPX_SD_HTTP_BUF_SIZE (LPX_SD_SIZE - offsetof(SD, http_out_data))
 #define LPX_SD_CLEAN (offsetof(SD, http_out_data))
 #define LPX_SIGNAL SIGRTMIN
 
@@ -49,6 +48,7 @@
 #define LPX_FLAG_PARSE_DEL 8388608
 #define LPX_FLAG_HUP 16777216
 #define LPX_FLAG_KAL 33554432
+#define LPX_FLAG_DK 67108864
 //main data structure in the project
 
 typedef struct LpxBuf
