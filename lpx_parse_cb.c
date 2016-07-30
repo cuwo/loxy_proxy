@@ -62,6 +62,7 @@ void LpxParseFinishDns(SD * sda)
 {
     struct gaicb * gaiptr;
     extern LpxList LpxSdGlobalListDns;
+    static struct addrinfo hints = {AI_PASSIVE, AF_INET, SOCK_STREAM};
     int result;
     //try to parse host as IP
     sda->trg_adr = sda->dst_adr;
@@ -77,7 +78,7 @@ void LpxParseFinishDns(SD * sda)
     gaiptr = &(sda->dns_gai);
     gaiptr->ar_name = sda->host;
     gaiptr->ar_service = sda->service;
-    gaiptr->ar_request = NULL;
+    gaiptr->ar_request = &hints;
     gaiptr->ar_result = NULL;
     result = getaddrinfo_a(GAI_NOWAIT, &gaiptr, 1, &(sda->dns_sev));
     LpxSdSetFlag(sda, LPX_FLAG_WAIT);
