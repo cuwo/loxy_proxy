@@ -19,7 +19,7 @@ int LpxNetWrite(SD * sda)
         return 1;
     }
     temp = send(sda->fd, sda->http_out_data + sda->http_out_ptr, to_write, MSG_NOSIGNAL);
-    dbgprint(("net write %d %d %d\n", sda->fd, temp, errno));
+    dbgprint(("net write %d %d %d %d\n", sda->fd, to_write, temp, errno));
     if (temp == 0) //socket closed
         return -1;
     if (temp < 0 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) //socket busy

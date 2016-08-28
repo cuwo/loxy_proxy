@@ -114,7 +114,7 @@ int main(int argc, char ** argv)
                         continue;
                 }
                 //we lost the other connection, process it
-                if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN))
+                if (sda->other == NULL && LpxSdGetFlag(sda, LPX_FLAG_CONN) && !LpxSdGetFlag(sda, LPX_FLAG_FINWR))
                 {
                     LpxCbKill(sda);
                     continue;
@@ -173,6 +173,7 @@ int main(int argc, char ** argv)
             }
             if (LpxSdGetFlag(sda, LPX_FLAG_PP_KILL | LPX_FLAG_DEAD) || ((LpxSdGetFlag(sda, LPX_FLAG_FINWR) && sda->http_out_size == 0)) )
             {
+                dbgprint(("pp_kill %d %d\n", sda->fd, sda->http_out_size));
                 LpxCbKill(sda);
             }
         }
