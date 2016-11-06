@@ -4,7 +4,7 @@
 #include "lpx_mem.h"
 #include "lpx_dbg.h"
 
-#define LPX_TIMEOUT 40000
+#define LPX_TIMEOUT 300000
 #define LPX_WAIT_TIMEOUT 10000
 
 #define LPX_SD_SIZE 32768
