@@ -68,8 +68,8 @@ void LpxArgsParse(int argc, char ** argv, int * lport)
 
     if (password != NULL && username != NULL)
     {
-        temp = len1 + len2 + 2;
-        auth_string = (char *)LpxMemSafeAlloc(temp);
+        temp = len1 + len2 + 1;
+        auth_string = (char *)LpxMemSafeAlloc(temp+1);
         strcpy(auth_string, username);
         auth_string[len1] = ':';
         auth_string[len1 + 1] = 0;
