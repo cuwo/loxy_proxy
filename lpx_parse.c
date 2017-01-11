@@ -221,8 +221,13 @@ int LpxParseHeaders(SD * sda)
         }
         if (memcmp(in_lowercase, "proxy-authorization: basic ", 27) == 0)
         {
-            if (LpxGlobalPassData.buf != NULL && memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0)
+            if (LpxGlobalPassData.buf != NULL && 
+                memcmp(in_data + 27, LpxGlobalPassData.buf, LpxGlobalPassData.len) == 0 &&
+                memcmp(in_data + 27 + LpxGlobalPassData.len, "\r\n", 2) == 0)
+            {
                 auth = 1;
+                LpxSdSetFlag(sda, LPX_FLAG_AUTH);
+            }
         }
         else if (memcmp(in_lowercase, "proxy", 5) == 0) //skip other proxy related headers
         {

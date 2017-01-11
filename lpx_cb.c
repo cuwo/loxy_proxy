@@ -24,7 +24,7 @@ void LpxCbTimer(SD * sda_tio)
         {
             LpxFinWr(sda, &LpxErrGlobal504);
         }
-        else if (tio > LPX_TIMEOUT)
+        else if (tio > LPX_TIMEOUT || tio > LPX_AUTH_TIMEOUT && LpxGlobalPassData.buf != NULL && !LpxSdGetFlag(sda, LPX_FLAG_AUTH))
         {
             LpxPP(sda, LPX_FLAG_PP_KILL);
         }
@@ -66,18 +66,15 @@ void LpxPP(SD * sda, unsigned int flags)
     LpxListAddTail(&LpxSdGlobalListPP, &(sda->pp_list));
 }
 
-void LpxFinWr(SD * sda, LpxConstString * err)
+void LpxSay(SD * sda, LpxConstString * err)
 {
     int temp;
     if (sda == NULL)
         return;
-    dbgprint(("fin wr %d\n", sda->fd));
-    LpxSdSetFlag(sda, LPX_FLAG_FINWR);
+    dbgprint(("say %d\n", sda->fd));
     if (err != NULL)
     {
-        //append the data to the end of write buf
-        temp =  err->len;
-        //if there is enough space
+        temp = err->len;
         if(temp <= (LPX_SD_HTTP_BUF_SIZE - sda->http_out_size))
         {
             dbgprint(("adding %d bytes already %d full %d\n",temp, sda->http_out_size,LPX_SD_HTTP_BUF_SIZE));
@@ -86,6 +83,16 @@ void LpxFinWr(SD * sda, LpxConstString * err)
         }
     }
     LpxPP(sda, LPX_FLAG_PP_WRITE);
+}
+
+void LpxFinWr(SD * sda, LpxConstString * err)
+{
+    int temp;
+    if (sda == NULL)
+        return;
+    dbgprint(("fin wr %d\n", sda->fd));
+    LpxSdSetFlag(sda, LPX_FLAG_FINWR);
+    LpxSay(sda, err);
 }
 
 void LpxCbDns(SD * sd_dns)

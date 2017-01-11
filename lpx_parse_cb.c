@@ -139,7 +139,10 @@ void LpxCbParse(SD * sda)
     }
     if (parse_result == 0) //auth error
     {
-        LpxFinWr(sda, &LpxErrGlobal407);
+        LpxSay(sda, &LpxErrGlobal407);
+        //clear http input
+        sda->http_in_ptr = 0;
+        sda->http_in_size = 0;
         return;
     }
     dbgprint(("parse-success\n"));
