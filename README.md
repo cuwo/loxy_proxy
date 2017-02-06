@@ -1,6 +1,14 @@
 # loxy_proxy
 simple http proxy with good performance
 
+HOW_TO_USE:
+I use nohup to prevent closing after SSH disconnect
+-l <port>  (default 8080)
+-u <username>
+-p <password>
+example:
+nohup ./proxy -l 8080 -u user -p password
+
 the design ideas are complete
 the implementation is still in progress
 
