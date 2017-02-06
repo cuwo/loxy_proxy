@@ -5,10 +5,10 @@ HOW_TO_USE:
 
 I use nohup to prevent closing after SSH disconnect  
 
--l \<port\>  (default 8080)  
+-l `<port`>  (default 8080)  
 
--u \<username\>  
--p \<password\>  
+-u `<username`>  
+-p `<password`>  
 
 example:  
 
