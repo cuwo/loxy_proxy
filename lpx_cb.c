@@ -24,7 +24,7 @@ void LpxCbTimer(SD * sda_tio)
         {
             LpxFinWr(sda, &LpxErrGlobal504);
         }
-        else if (tio > LPX_TIMEOUT || tio > LPX_AUTH_TIMEOUT && LpxGlobalPassData.buf != NULL && !LpxSdGetFlag(sda, LPX_FLAG_AUTH))
+        else if (tio > LPX_TIMEOUT || tio > LPX_AUTH_TIMEOUT && LpxGlobalPassData.buf != NULL && LpxSdGetFlag(sda, LPX_FLAG_CLIENT) && !LpxSdGetFlag(sda, LPX_FLAG_AUTH))
         {
             LpxPP(sda, LPX_FLAG_PP_KILL);
         }
